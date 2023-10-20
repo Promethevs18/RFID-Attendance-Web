@@ -5,8 +5,11 @@ import { auth } from "./firebase"
 import Sidebar from "./Globals/Sidebar";
 import Topbar from "./Globals/Topbar";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Route, Routes } from "react-router-dom";
-import { Dashboard } from "@mui/icons-material";
+import Dashboard from "./Scenes/Dashboard";
+import Authentication from "./Scenes/Authentication";
+import AddStudent from "./Scenes/AddStudent";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -32,10 +35,12 @@ function App() {
         <div className="app">
           <Sidebar setActive={setActive} active={active} user={user}/>
           <main className="content">
-            <Topbar/>
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
+            <Topbar/>
             <Routes setUser={user}>
               <Route path="/" element={<Dashboard setActive={setActive} />}/>
+              <Route path="/authentication" element={<Authentication setActive={setActive} user={user}/>}/>
+              <Route path="/addstudent" element={<AddStudent setActive={setActive}/>}/>
             </Routes>
           </main>
         </div>

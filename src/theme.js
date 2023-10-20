@@ -133,7 +133,7 @@ export const themeSettings = (mode) => {
                 main: colors.pink[500],
               },
               secondary: {
-                main: colors.yellow[500],
+                main: colors.yellow[300],
               },
               neutral: {
                 dark: colors.maroon[700],
@@ -141,7 +141,7 @@ export const themeSettings = (mode) => {
                 light: colors.maroon[100],
               },
               background: {
-                default: colors.pink[500],
+                default: colors.goldish[500],
               },
               reddish: {
                 main: colors.goldish[500],

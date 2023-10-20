@@ -44,24 +44,7 @@ body,
   color: #2b2b2b;
 }
 
+.error-message{
+  color: white
+}
 
-/* Color Theme Swatches in Hex */
-.Gift-box-1-hex { color: #8C2E40; }
-.Gift-box-2-hex { color: #8C2E47; }
-.Gift-box-3-hex { color: #D9B779; }
-.Gift-box-4-hex { color: #A6783F; }
-.Gift-box-5-hex { color: #F2F2F2; }
-
-/* Color Theme Swatches in RGBA */
-.Gift-box-1-rgba { color: rgba(140, 46, 63, 1); }
-.Gift-box-2-rgba { color: rgba(140, 46, 71, 1); }
-.Gift-box-3-rgba { color: rgba(216, 183, 121, 1); }
-.Gift-box-4-rgba { color: rgba(165, 119, 62, 1); }
-.Gift-box-5-rgba { color: rgba(242, 242, 242, 1); }
-
-/* Color Theme Swatches in HSLA */
-.Gift-box-1-hsla { color: hsla(348, 50, 36, 1); }
-.Gift-box-2-hsla { color: hsla(343, 50, 36, 1); }
-.Gift-box-3-hsla { color: hsla(39, 55, 66, 1); }
-.Gift-box-4-hsla { color: hsla(33, 44, 44, 1); }
-.Gift-box-5-hsla { color: hsla(0, 0, 95, 1); }

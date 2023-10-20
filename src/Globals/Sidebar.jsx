@@ -72,7 +72,7 @@ const Sidebar = ({ user, setActive }) => {
             icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
             style={{
               margin: "10px 0 20px 0",
-              color: kulay.maroon[100],
+              color: kulay.goldish[100],
             }}
           >
             {!isCollapsed && (
@@ -95,13 +95,13 @@ const Sidebar = ({ user, setActive }) => {
                 <img
                   alt="SSG Logo"
                   width="150px"
-                  height="150px"
-                  src="https://firebasestorage.googleapis.com/v0/b/pnhs-online-voting.appspot.com/o/Misc%2FSSG%20Logo.png?alt=media&token=3939d326-17b9-424b-9ef1-efc3b1f9559f&_gl=1*1mbw1rd*_ga*OTc5MjU5NDA0LjE2OTY4MjM3NjY.*_ga_CW55HF8NVT*MTY5NzAwMTM1NS4xMi4xLjE2OTcwMDEzNTkuNTYuMC4w"
-                  style={{ borderRadius: "50%" }}
+                  height="200px"
+                  src="https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/university-icon-removebg-preview.png?alt=media&token=a0718810-f2b7-43f8-9ad6-a44caf59b95a"
+                  style={{ borderRadius: "40%" }}
                 />
               </Box>
               <Box textAlign="center">
-                {"lXIif4C0GcdeNxKVDv2oIyrlUG13" === user?.uid && (
+                { user?.uid && (
                   <Typography
                     variant="h2"
                     color={kulay.maroon[100]}
@@ -111,8 +111,8 @@ const Sidebar = ({ user, setActive }) => {
                     Administrator
                   </Typography>
                 )}
-                <Typography variant="h5" color={kulay.goldish[500]}>
-                  SSG Online Voting System CMS
+                <Typography variant="h5" color={kulay.white[400]}>
+                   Attendance Monitoring System
                 </Typography>
               </Box>
             </Box>
@@ -127,16 +127,15 @@ const Sidebar = ({ user, setActive }) => {
               selected={selected}
               setSelected={setSelected}
             />
-            { "lXIif4C0GcdeNxKVDv2oIyrlUG13" === user?.uid && (
+            { user?.uid && (
                 <Item
-                     title="Add Candidate"
-                     to="/addcandidate"
+                     title="Add Student"
+                     to="/addstudent"
                      icon={<Diversity3Icon/>}
                      selected={selected}
                      setSelected={setSelected}
                 /> 
             )}
-     
             {user?.uid ? (
               <Item
                 title="Press me to logout"
