@@ -239,7 +239,7 @@ const AddStudent = () => {
                             color = "secondary"
                             onClick={() => addStudent(values)}
                             >
-                            Add Service to the Database
+                            Add Student to the Database
                             </Button>
                         </Box>
                     </Form>

@@ -11,6 +11,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SummarizeOutlined  from "@mui/icons-material/Summarize";
 
 const Item = ({ title, to, icon, selected, setSelected, user }) => {
   const theme = useTheme();
@@ -135,6 +136,15 @@ const Sidebar = ({ user, setActive }) => {
                      selected={selected}
                      setSelected={setSelected}
                 /> 
+            )}
+            {user?.uid &&(
+               <Item
+                 title="Student Manifest"
+                 to="/studentlist"
+                 icon={<SummarizeOutlined/>}
+                selected={selected}
+                setSelected={setSelected}
+          /> 
             )}
             {user?.uid ? (
               <Item
