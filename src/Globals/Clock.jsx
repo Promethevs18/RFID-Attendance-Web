@@ -1,3 +1,5 @@
+import { red } from "@mui/material/colors";
+import { color } from "@mui/system";
 import * as React from "react";
 
 export default class Clock extends React.Component {
@@ -31,17 +33,12 @@ export default class Clock extends React.Component {
     const hoursStyle = {
       transform: `rotate(${hours * 30}deg)`
     };
-    const { title } = this.props;
     return (
       <div className={"clock"}>
-        <h3>{title}</h3>
         <div className={"analog-clock"}>
           <div className={"dial seconds"} style={secondsStyle} />
           <div className={"dial minutes"} style={minutesStyle} />
           <div className={"dial hours"} style={hoursStyle} />
-        </div>
-        <div className={"digital-clock"}>
-          {hours}:{minutes}:{seconds}
         </div>
       </div>
     );
