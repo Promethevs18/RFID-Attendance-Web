@@ -22,7 +22,7 @@ const Topbar = () => {
             <LightModeOutlined />
           )}
         </IconButton>
-      </Box>
+        </Box>
     </Box>
   );
 };

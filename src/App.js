@@ -11,11 +11,13 @@ import Dashboard from "./Scenes/Dashboard";
 import Authentication from "./Scenes/Authentication";
 import AddStudent from "./Scenes/AddStudent";
 import StudentLister from "./Scenes/StudentLister";
+import Clock from "./Globals/Clock";
 
 function App() {
   const [theme, colorMode] = useMode();
   const [user, setUser] = useState(null);
   const [active, setActive] = useState("Dashboard");
+  const [isSidebar, setIsSidebar] = useState(true);
 
   useEffect(() =>{
     auth.onAuthStateChanged((authUser) =>{
@@ -34,10 +36,10 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline/>
         <div className="app">
-          <Sidebar setActive={setActive} active={active} user={user}/>
+          <Sidebar setActive={setActive} active={active} user={user} isSidebar={isSidebar}/>
           <main className="content">
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
-            <Topbar/>
+            <Topbar setIsSidebar={setIsSidebar}/>
             <Routes setUser={user}>
               <Route path="/" element={<Dashboard setActive={setActive} />}/>
               <Route path="/authentication" element={<Authentication setActive={setActive} user={user}/>}/>

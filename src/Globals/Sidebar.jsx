@@ -12,6 +12,8 @@ import { auth } from "../firebase";
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SummarizeOutlined  from "@mui/icons-material/Summarize";
+import Clock from "./Clock";
+
 
 const Item = ({ title, to, icon, selected, setSelected, user }) => {
   const theme = useTheme();
@@ -41,7 +43,7 @@ const Item = ({ title, to, icon, selected, setSelected, user }) => {
 const Sidebar = ({ user, setActive }) => {
   const theme = useTheme();
   const kulay = tokens(theme.palette.mode);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState("Dashboard");
 
 
@@ -65,7 +67,7 @@ const Sidebar = ({ user, setActive }) => {
         },
       }}
     >
-      <ProSidebar collapsed={isCollapsed} style={{ height: "100%" }}>
+      <ProSidebar collapsed={isCollapsed} >
         <Menu iconShape="square">
           {/* LOGO AND MENU ICON */}
           <MenuItem
@@ -93,13 +95,7 @@ const Sidebar = ({ user, setActive }) => {
           {!isCollapsed && (
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
-                <img
-                  alt="SSG Logo"
-                  width="150px"
-                  height="200px"
-                  src="https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/university-icon-removebg-preview.png?alt=media&token=a0718810-f2b7-43f8-9ad6-a44caf59b95a"
-                  style={{ borderRadius: "40%" }}
-                />
+              <Clock title="Tokyo" datediff={0} />
               </Box>
               <Box textAlign="center">
                 { user?.uid && (

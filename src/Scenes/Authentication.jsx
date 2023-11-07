@@ -9,7 +9,7 @@ import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 
 
-const Authentication = () => {
+const Authentication = ({setUser, setActive}) => {
 
   const initialValues = {
     email: "",
@@ -24,13 +24,16 @@ const Authentication = () => {
   const navi = useNavigate();
 
   const loginToSystem = async (values) => {
-      await signInWithEmailAndPassword(
+       const { user } = await signInWithEmailAndPassword(
         auth, values.email, values.password
       ).catch((error) => {
         toast.error(error.message)
       });
       toast.success("You have succesfully logged in");
       navi("/")
+      setUser(user)
+      setActive("Dashboard")
+      
   }
 
   return (
