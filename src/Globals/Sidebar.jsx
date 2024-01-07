@@ -12,8 +12,8 @@ import { auth } from "../firebase";
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SummarizeOutlined  from "@mui/icons-material/Summarize";
-import Clock from "./Clock";
-
+import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
+import Clock from "../Globals/Clock"
 
 const Item = ({ title, to, icon, selected, setSelected, user }) => {
   const theme = useTheme();
@@ -95,7 +95,7 @@ const Sidebar = ({ user, setActive }) => {
           {!isCollapsed && (
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
-              <Clock title="Tokyo" datediff={0} />
+                <Clock datediff={0}/>
               </Box>
               <Box textAlign="center">
                 { user?.uid && (
@@ -116,7 +116,7 @@ const Sidebar = ({ user, setActive }) => {
           )}
 
           {/* Menu Items */}
-          <Box paddingLeft={!isCollapsed ? undefined : "10%"}>
+          <Box paddingLeft={!isCollapsed ? undefined : "10%"} >
             <Item
               title="Dashboard"
               to="/"
@@ -129,6 +129,15 @@ const Sidebar = ({ user, setActive }) => {
                      title="Add Student"
                      to="/addstudent"
                      icon={<Diversity3Icon/>}
+                     selected={selected}
+                     setSelected={setSelected}
+                /> 
+            )}
+             { user?.uid && (
+                <Item
+                     title="Modify Categories"
+                     to="/modifycategories"
+                     icon={<MapsHomeWorkIcon/>}
                      selected={selected}
                      setSelected={setSelected}
                 /> 
@@ -160,7 +169,9 @@ const Sidebar = ({ user, setActive }) => {
                 setSelected={setSelected}
             /> 
             )}
+               
           </Box>
+    
         </Menu>
       </ProSidebar>
     </Box>

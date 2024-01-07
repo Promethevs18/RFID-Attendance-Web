@@ -12,6 +12,7 @@ import Authentication from "./Scenes/Authentication";
 import AddStudent from "./Scenes/AddStudent";
 import StudentLister from "./Scenes/StudentLister";
 import Clock from "./Globals/Clock";
+import ModifyCategories from "./Scenes/ModifyCategories";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -44,6 +45,7 @@ function App() {
               <Route path="/" element={<Dashboard setActive={setActive} />}/>
               <Route path="/authentication" element={<Authentication setActive={setActive} user={user}/>}/>
               <Route path="/addstudent" element={<AddStudent setActive={setActive}/>}/>
+              <Route path="/modifycategories" element={<ModifyCategories setActive={setActive}/>}/>
               <Route path="/studentlist" element={<StudentLister setActive={setActive}/>}/>
             </Routes>
           </main>

@@ -36,23 +36,16 @@ const Dashboard = () => {
 
   return (
     <Box m="20px">
-         <Header title="DASHBOARD" subtitle="This is where general "/>
+         <Header title="DASHBOARD" subtitle="This is where general information are displayed "/>
        <Box display="flex" justifyContent="space-evenly">
-          <Typography
+          {/* <Typography
             variant="h2"
             color={colors.goldish[100]}
             fontWeight="bold"
             sx={{m: "5px 0 0 0"}}>
               Grade Level Chart
-            </Typography>
+            </Typography> */}
 
-            <Typography
-            variant="h2"
-            color={colors.goldish[100]}
-            fontWeight="bold"
-            sx={{m: "5px 0 0 0"}}>
-              Strand Chart
-            </Typography>
        </Box>
    
     </Box>

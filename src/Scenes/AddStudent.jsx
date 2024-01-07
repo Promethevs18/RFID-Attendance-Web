@@ -106,7 +106,7 @@ const AddStudent = () => {
             >
                 {({values, errors, touched, handleBlur, handleChange}) => (
                     <Form>
-                        <Box display="flex" justifyContent="center" m="20px">
+                        <Box display="flex" justifyContent="start" m="20px">
                                <input
                                 type="file"
                                 style={{display: "none"}}
@@ -127,9 +127,8 @@ const AddStudent = () => {
                                 document.getElementById("imageUpload").click();
                                 }}
                                 />
-                       
                       </Box>
-                            <Box display="flex" justifyContent="start" m="20px">
+                          <Box display="flex" justifyContent="start" m="20px">
                                 <TextField
                                     variant="filled"
                                     fullWidth
@@ -172,7 +171,7 @@ const AddStudent = () => {
                                     <span className="error-message">{errors.grade_level}</span>}
                                 sx={{maxWidth: "20%", marginLeft: "15px"}}
                             />
-                  </Box>
+                           </Box>
                         <Box display="flex" justifyContent="center" m="20px">               
                              <TextField
                                 variant="filled"

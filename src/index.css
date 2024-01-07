@@ -67,7 +67,7 @@ body,
     border: solid 1px #000;
     border-radius: 50%;
     position: relative;
-    background: #fff url("https://www.jing.fm/clipimg/full/0-7025_clock-clipart-with-no-hands-analog-clock-without.png");
+    background:url("https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/clock-transparent-png-6.png?alt=media&token=84444cf5-d0e0-4413-85aa-e3f6381b6c97");
     background-size: cover;
     .dial {
       position: absolute;
