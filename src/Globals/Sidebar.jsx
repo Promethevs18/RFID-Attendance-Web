@@ -95,7 +95,7 @@ const Sidebar = ({ user, setActive }) => {
           {!isCollapsed && (
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
-                <Clock datediff={0}/>
+                <Clock datediff={0  }/>
               </Box>
               <Box textAlign="center">
                 { user?.uid && (

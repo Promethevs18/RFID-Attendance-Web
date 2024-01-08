@@ -101,11 +101,11 @@ const StudentLister = () => {
                   color: colors.white[200],
                 },
                 "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: colors.goldish[700],
+                  backgroundColor: colors.maroon[700],
                   borderBottom: "none",
                 },
                 "& .MuiDataGrid-virtualScroller": {
-                  backgroundColor: colors.white[700],
+                  backgroundColor: colors.yellow[700],
                 },
                 "& .MuiDataGrid-footerContainer": {
                   borderTop: "none",
