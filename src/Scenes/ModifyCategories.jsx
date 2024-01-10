@@ -3,20 +3,17 @@ import React, { useEffect, useState } from 'react'
 import Header from '../Components/Header'
 import { DataGrid } from '@mui/x-data-grid'
 import { Button, Typography } from '@mui/material'
-import { toast } from 'react-toastify'
 import { getDatabase, onValue, ref } from 'firebase/database'
 
 const ModifyCategories = () => {
-  
+
   //Arrays and other iterations
+    const db = getDatabase();
+
+   //START OF YEAR LEVEL CODES
   const [checkedLevel, setCheckedLevel] = useState([]);
   const [levelArray, setLevelArray] = useState([]);
   const [levelList, setLevel] = useState([]);
-  const db = getDatabase();
-
-
-   //START OF YEAR LEVEL CODES
-
    //useEffect to get the data from Firebase
    useEffect(() =>{
     const fetchLevels = () =>{
@@ -40,53 +37,85 @@ const ModifyCategories = () => {
   fetchLevels()
   },[db])
 
-  // Effect to log levelArray when it changes
-  useEffect(() => {
-    console.log(levelArray);
-  }, [levelArray]);
-  
-  //change handler for the selection ng level muna
-  const chosenLevel = (napili) => {
-    setCheckedLevel(napili)
-  }
-  const addLevelArray = () => {
+    //UseEffect para i update agad ang array sa current 
+  useEffect(()=>{
     if (checkedLevel.length > 0) {
       const selectedLevels = checkedLevel.map((id) => levelList.find((row) => row.id === id)?.id);
       setLevelArray(selectedLevels);
     } else {
-      toast.error('No selected levels');
+      console.error('No selected grade levels');
     }
 
-  }
+  }, [checkedLevel, levelList, levelArray,db])
 
+  //change handler for the selection ng level muna
+  const chosenLevel = (napili) => {
+    setCheckedLevel(napili)
+    console.log(checkedLevel)
+  }
 // for the columns of the first datagrid
 const gradeColumns = [
   {field: "id", headerName: "Grade Level", flex: 1}
 ]
-
 // END OF YEAR LEVEL CODES
 
+// START OF STRANDS/TRACKS
+//initialize respective arrays and elements
+const[checkedOption, setCheckedOption] = useState([]);
+const[optionArray, setOptionArray] = useState([])
+const[optionList, setOptionList] = useState([])
 
+//Useeffect to get all the tracks from the database
+useEffect(() =>{
+  const fetchOptions = () =>{
+    const options = []
+    const optionsDB = ref(db, "Strand/");
+    onValue(
+      optionsDB,
+      (snapshot) =>{
+        snapshot.forEach((snappy) =>{
+          const takenOptions = {
+            id: snappy.key
+          }
+          options.push(takenOptions)
+          setOptionList(options)
+        })
+      }
+    )
+  }
+  fetchOptions();
+}, [db])
 
+   //UseEffect para i update agad ang array sa current 
+  useEffect(()=>{
+    if(checkedOption.length > 0){
+      const selectedOptions = checkedOption.map((id) => optionList.find((row) => row.id === id)?.id);
+      setOptionArray(selectedOptions);
+    }else {
+    console.error('No selected grade levels');
+  }
+  }, [optionArray, checkedOption, optionList])
 
+//change hanlder para pag pinili ng admin ang section
+const handleOptionChange = (napili) => {
+  setCheckedOption(napili)
+  console.log(checkedOption)
+}
+
+//column definition para sa ating table
+const optionColumn = [
+  {field: "id", headerName: "Tracks/Strands Listed", flex:1}
+]
+// END OF TRACK/STRAND OPTIONS CODE
   //UI part
   return (
     <Box m="20px">
-        <Header title="MODIFY CATEGORIES" subtitle="This section allows you to modify your schools academic strands and tracks"/>
+        <Header title="Category Manifesto" subtitle="This section allows you to modify your schools academic strands and tracks"/>
 
-        <Box marginLeft="20px" display="flex" justifyContent="space-between" alignContent="center">
-          <Box >
-                <Typography
-                  variant="h3"
-                  color="white"
-                  marginTop="10px"
-                  fontWeight="bold"
-                  fontSize="40px"
-                  >
-                    School Grade Level 
-                  </Typography>
-          </Box>
-          <Box alignSelf="center">
+        <Box m="20px" display="flex" flexDirection="row" justifyContent="space-around">
+                    {/* For the school level section */}
+          <Box display="flex" flexDirection="row" justifyContent="center">
+               <Box>
                 <Typography
                     variant="h3"
                     color="white"
@@ -94,46 +123,54 @@ const gradeColumns = [
                     fontWeight="bold"
                     fontSize="40px"
                     >
-                     Academic Strands/Tracks
+                      School Grade Level 
                     </Typography>
+                    <Box padding="20px">
+                        <DataGrid
+                        rows={levelList}
+                        columns={gradeColumns}
+                        onRowSelectionModelChange={chosenLevel}
+                        />
+                        
+                    </Box>
+               </Box>
+            <Box marginTop="70px">
+        
+                  <Box>Hellow</Box>
+                  <Box>Hellow</Box>
+                  <Box>Hellow</Box>
+            </Box>
           </Box>
-         
-        </Box>
-        <Box display="flex" justifyContent="space-between" alignContent="center" >
-          <Box padding="20px">
-                      <DataGrid
-                       rows={levelList}
-                       columns={gradeColumns}
-                       checkboxSelection
-                       disableRowSelectionOnClick
-                       onRowSelectionModelChange={chosenLevel}
-                       />
-                       
+                    {/* For the track/strand section */}
+          <Box display="flex" flexDirection="row" justifyContent="center">
+             <Box marginTop="70px">
+                 Hwllo
+             </Box> 
+                  <Box>
+                      <Typography
+                            variant="h3"
+                            color="white"
+                            marginTop="10px"
+                            fontWeight="bold"
+                            fontSize="40px"
+                            >
+                            Academic Strands/Tracks
+                      </Typography>
+                      <Box padding="20px">
+                              <DataGrid
+                              rows={optionList}
+                              columns={optionColumn}
+                              onRowSelectionModelChange={handleOptionChange}
+                              />
+                      </Box>
+                  </Box>
           </Box>
-          <Button
-            variant="contained"
-            color = "primary"
-            onClick={() => addLevelArray()}
-            sx={{height: "70px"}}>
-            Press me motherfucker
-          </Button>
-          <Button
-            variant="contained"
-            color = "primary"
-            sx={{height: "70px"}}  
-            >
-              Press me motherfucker
-            </Button> 
-          <Box padding="20px">
-                       <DataGrid
-                       rows={levelList}
-                       columns={gradeColumns}
-                       checkboxSelection
-                       disableRowSelectionOnClick
-                       />
-          </Box>  
           </Box>
-    </Box>
+
+        <Box display="flex" justifyContent="center" alignContent="center" >
+                Test area to demo the freakin' table
+        </Box>  
+     </Box>
   )
 }
 

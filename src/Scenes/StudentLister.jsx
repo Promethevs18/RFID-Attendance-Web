@@ -85,7 +85,7 @@ const StudentLister = () => {
   return (
     <Box m="20px">
         <Header 
-            title="Student Manifesto"
+            title="Grand Student Manifesto"
             subtitle="This section allows you to view all the listed students in the system"/>
         <Box 
             m="40px 0 0 0"
