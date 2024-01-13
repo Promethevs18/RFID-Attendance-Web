@@ -2,8 +2,8 @@ import { Box } from '@mui/system'
 import React, { useEffect, useRef, useState } from 'react'
 import Header from '../Components/Header'
 import { DataGrid } from '@mui/x-data-grid'
-import { Button, TextField, Typography } from '@mui/material'
-import { getDatabase, onValue, ref } from 'firebase/database'
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField, Typography } from '@mui/material'
+import { getDatabase, onValue, ref, remove, set } from 'firebase/database'
 import { Form, Formik } from 'formik'
 import * as yup from "yup";
 import { toast } from 'react-toastify'
@@ -15,15 +15,17 @@ const ModifyCategories = () => {
   //Arrays and other iterations
   const db = getDatabase();
 
+  //initialize respective arrays and elements
   const [checkedLevel, setCheckedLevel] = useState([]);
   const [levelArray, setLevelArray] = useState([]);
   const [levelList, setLevel] = useState([]);
 
-  //initialize respective arrays and elements
   const[checkedOption, setCheckedOption] = useState([]);
   const[optionArray, setOptionArray] = useState([])
   const[optionList, setOptionList] = useState([])
+
   const [fetchData, setFetchData] = useState(false);
+  const formikRef = useRef(null);
 
   //START OF YEAR LEVEL CODES
    //useEffect to get the data from Firebase
@@ -122,26 +124,49 @@ const optionColumn = [
 //--------------------------------------------------------------
 
 //START OF INPUT RELATED UI CODES
+
   // eto ang para sa gradeLevel
 const levelInitial = {gradeLevel: ""}
-const formikRef = useRef(null);
-
 const levelValidation = yup.object().shape({
   gradeLevel: yup.string().required("This field is required"),
 });
 
-
 const addLevel = (k) => {
-  toast.info(k.gradeLevel)
+  try{
+    set(
+      ref(db, "Grade Level/"+ k.gradeLevel),{
+        dataMarker: "Node created at: "+ new Date().toDateString()
+      }
+    )
+    window.location.reload()
+  } catch(mali){
+    toast.error("Something went wrong due to:" + mali)
+  }
 };
 
+// end of grade level codes
 
+//Start of Tracks/Strand level
+const optionInitial = {option: ""}
+const optionValidation = yup.object().shape({
+  option: yup.string().required("This field is required")
+});
+
+const addOption = (k) =>{
+  try{
+    set(ref(db, "Strand/" + k.option),{
+      dataMarker: "Node created at: " + new Date().toDateString()
+    })
+    window.location.reload();
+  }catch(mali){
+    toast.error("Error due to: " + mali)
+  }
+}
 // ------------------------------------------------------------------------------
 // Eto naman ang para sa table of all codes
 
 const tema = useTheme();
 const colors = tokens(tema.palette.mode)
-
 const [dataRows, setDataRows] = useState([])
 
 
@@ -197,12 +222,52 @@ const dataColumns = [
 ];
 
 // End of table of all codes
+
+// ------------------------------------------------------------------------------------
+
+
+//Start of Code deleters
+    //This is for the level delete
+const [open, setOpen] = useState(false);
+const [levelOpen, setLevelOpen] = useState(false)
+
+const disagree = () => {
+  setOpen(false)
+}
+const openDialog = () => {
+  setOpen(true)
+}
+const openLevel = () => {
+  setLevelOpen(true)
+}
+const deleteLevel = () => {
+  try{
+    remove(ref(db, "Grade Level/"+ levelArray[0]))
+    window.location.reload()
+  }catch (mali) {
+    toast.error("Something went wrong: "+ mali)
+  }
+  setOpen(false)
+}
+
+    //This is for the option delete
+const deleteOption = () => {
+  try{
+    remove(ref(db, "Strand/" + optionArray[0]))
+    window.location.reload();
+  }catch(mali){
+    toast.error("Something went wrong: "+ mali)
+  }
+}
+//End of code deleters
+// -----------------------------------------------------------------
+
   //UI part
   return (
     <Box m="20px">
         <Header title="Category Manifesto" subtitle="This section allows you to modify your schools academic strands and tracks"/>
 
-        <Box m="20px" display="flex" flexDirection="row" justifyContent="space-around">
+        <Box m="20px" display="flex" justifyContent="space-between">
                     {/* For the school level section */}
           <Box display="flex" flexDirection="row" justifyContent="center">
                <Box>
@@ -232,7 +297,7 @@ const dataColumns = [
                   validationSchema={levelValidation}
                   onSubmit={addLevel}
                   >
-                    {({values, errors, touched, handleBlur, handleChange}) => (
+                    {({ errors, touched, handleBlur, handleChange}) => (
                       <Form>
                         <Box display="flex">
                           <TextField
@@ -248,7 +313,7 @@ const dataColumns = [
                             />
                         </Box>
                         <Button 
-                          sx={{m:"10px"}}
+                          sx={{marginTop:"10px"}}
                           variant='outlined'
                           color="secondary"
                           type='submit'
@@ -258,12 +323,95 @@ const dataColumns = [
                       </Form>
                     )}
                   </Formik>
+                        {/* Delete Level Button */}
+                        <Button
+                          sx={{marginTop: "10px"}}
+                          variant='contained'
+                          color = "primary"
+                          onClick={() => openLevel()}
+                          >Delete Grade Level</Button>
+                        <Dialog
+                          open={levelOpen}
+                          onClose={disagree}
+                        >
+                          <DialogTitle sx={{fontWeight:"bold", fontSize: "30px"}}>
+                            Delete School Grade Level
+                          </DialogTitle>
+                          <DialogContent >
+                            <DialogContentText sx={{fontSize:"15px", fontStyle:"italic"}}>
+                            Deleting the school grade level does not only remove its identity, but also removes any related records within the database. If you are certain of this action, you may press on the "Agree" button
+                            </DialogContentText>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={disagree} color='secondary'>Disagree</Button>
+                            <Button onClick={deleteLevel} autoFocus color='secondary'>Agree</Button>
+                          </DialogActions>
+                        </Dialog>
             </Box>
           </Box>
+
+          
                     {/* For the track/strand section */}
-          <Box display="flex" flexDirection="row" justifyContent="center">
+          <Box display="flex" justifyContent="center">
              <Box marginTop="70px">
-                 Hwllo
+                    {/* For the Strands/Track input and buttons */}
+                <Formik
+                  ref={formikRef}
+                  initialValues={optionInitial}
+                  validationSchema={optionValidation}
+                  onSubmit={addOption}
+                  >
+                    {({ errors, touched, handleBlur, handleChange}) => (
+                      <Form>
+                        <Box display="flex">
+                          <TextField
+                            variant='filled'
+                            fullWidth
+                            type='text'
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            label="Strand/Track to add"
+                            name="option"
+                            error={!!touched.gradeLevel && !!errors.gradeLevel}
+                            helperText={touched.gradeLevel && errors.gradeLevel}                            
+                            />
+                        </Box>
+                        <Button 
+                          sx={{marginTop:"10px"}}
+                          variant='outlined'
+                          color="secondary"
+                          type='submit'
+                          >
+                            Add Strand/Track to database
+                          </Button>
+                      </Form>
+                    )}
+                  </Formik>
+                        {/* Delete Level Button */}
+                        <Button
+                          sx={{marginTop: "10px"}}
+                          variant='contained'
+                          color = "primary"
+                          onClick={() => openDialog()}
+                          >Delete Strand/Track Level</Button>
+                        <Dialog
+                          open={open}
+                          onClose={disagree}
+                        >
+                          <DialogTitle sx={{fontWeight:"bold", fontSize: "30px"}}>
+                            Delete Strand/Track Level
+                          </DialogTitle>
+                          <DialogContent >
+                            <DialogContentText sx={{fontSize:"15px", fontStyle:"italic"}}>
+                            Deleting the school's strand/track does not only remove its identity, but also removes any related records within the database. If you are certain of this action, you may press on the "Agree" button
+                            </DialogContentText>
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={disagree} color='secondary'>Disagree</Button>
+                            <Button onClick={deleteOption} autoFocus color='secondary'>Agree</Button>
+                          </DialogActions>
+                        </Dialog>
+
              </Box> 
                   <Box>
                       <Typography
