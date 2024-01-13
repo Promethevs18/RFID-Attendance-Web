@@ -236,7 +236,7 @@ const AddStudent = () => {
                             <Button
                             variant="contained"
                             color = "secondary"
-                            onClick={() => addStudent(values)}
+                            type="submit"
                             >
                             Add Student to the Database
                             </Button>

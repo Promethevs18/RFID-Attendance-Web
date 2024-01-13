@@ -80,6 +80,7 @@ const StudentLister = () => {
         { field: "grade_level", headerName: "Grade Level", flex: 1 },
         { field: "id_num", headerName: "ID Number", flex: 1 },
         { field: "caretaker_name", headerName: "Caretaker's Name", flex: 1 },
+        { field: "caretaker_num", headerName: "Caretaker's Phone", flex: 1 },
       ];
     
   return (
