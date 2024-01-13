@@ -269,7 +269,7 @@ const deleteOption = () => {
 
         <Box m="20px" display="flex" justifyContent="space-between">
                     {/* For the school level section */}
-          <Box display="flex" flexDirection="row" justifyContent="center">
+          <Box display="flex">
                <Box>
                 <Typography
                     variant="h3"
@@ -352,7 +352,7 @@ const deleteOption = () => {
 
           
                     {/* For the track/strand section */}
-          <Box display="flex" justifyContent="center">
+          <Box display="flex">
              <Box marginTop="70px">
                     {/* For the Strands/Track input and buttons */}
                 <Formik
