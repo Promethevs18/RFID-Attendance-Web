@@ -280,7 +280,7 @@ const deleteOption = () => {
                     >
                       School Grade Level 
                     </Typography>
-                    <Box padding="20px">
+                    <Box padding="20px" maxWidth="400px">
                         <DataGrid
                         rows={levelList}
                         columns={gradeColumns}
@@ -423,7 +423,7 @@ const deleteOption = () => {
                             >
                             Academic Strands/Tracks
                       </Typography>
-                      <Box padding="20px">
+                      <Box padding="20px" maxWidth="400px">
                               <DataGrid
                               rows={optionList}
                               columns={optionColumn}

@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react'
 import Header from '../Components/Header'
 import { Box, Typography, useTheme } from '@mui/material'
 import { tokens } from '../theme'
-import { ResponsivePie } from "@nivo/pie"
 import {getDatabase, onValue, ref} from "firebase/database"
-import Clock from '../Globals/Clock'
+import { BarChart, axisClasses } from '@mui/x-charts'
 
 const Dashboard = () => {
   const theme = useTheme()
@@ -32,19 +31,30 @@ const Dashboard = () => {
     })
 
   },[db])
-  
+
+// This code is for the chart y axis (Grade Level students)
+  const chartSetting = {
+    yAxis: [
+      {
+        label: 'Number of Students',
+      },
+    ],
+    width: 500,
+    height: 300,
+  };
 
   return (
     <Box m="20px">
          <Header title="DASHBOARD" subtitle="This is where general information are displayed "/>
        <Box display="flex" justifyContent="space-evenly">
-          {/* <Typography
-            variant="h2"
-            color={colors.goldish[100]}
-            fontWeight="bold"
-            sx={{m: "5px 0 0 0"}}>
-              Grade Level Chart
-            </Typography> */}
+        <Box sx={{backgroundColor: "maroon" }}>
+        <BarChart
+            dataset={allGrades}
+            xAxis={[{ scaleType: 'band', dataKey: 'id' }]}
+            series={[{ dataKey: 'value', label: 'Number of Students' }]}
+            {...chartSetting}
+          />  
+        </Box>
 
        </Box>
    
