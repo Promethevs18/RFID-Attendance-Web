@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react'
 import Header from '../Components/Header'
-import { Box, Typography, useTheme } from '@mui/material'
-import { tokens } from '../theme'
+import { Box } from '@mui/material'
 import {getDatabase, onValue, ref} from "firebase/database"
 import { BarChart, axisClasses } from '@mui/x-charts'
 
 const Dashboard = () => {
-  const theme = useTheme()
-  const colors = tokens(theme.palette.mode);
+
   const [allGrades, setAllGrades] = useState([]);
   const [allStrands, setAllStrands] = useState([])
   const db = getDatabase();
 
+  // A useEffect to get all data from the database
   useEffect(() => {
     const gradeCounts = []
     const strandCounts = []
@@ -32,6 +31,7 @@ const Dashboard = () => {
 
   },[db])
 
+
 // This code is for the chart y axis (Grade Level students)
   const chartSetting = {
     yAxis: [
@@ -41,23 +41,34 @@ const Dashboard = () => {
     ],
     width: 500,
     height: 300,
+    sx: {
+      [`.${axisClasses.left} .${axisClasses.label}`]: {
+        transform: 'translate(-6px, 0)',
+      },
+    },
   };
 
+  
+  // UI part
   return (
     <Box m="20px">
          <Header title="DASHBOARD" subtitle="This is where general information are displayed "/>
        <Box display="flex" justifyContent="space-evenly">
-        <Box sx={{backgroundColor: "maroon" }}>
-        <BarChart
-            dataset={allGrades}
-            xAxis={[{ scaleType: 'band', dataKey: 'id' }]}
-            series={[{ dataKey: 'value', label: 'Number of Students' }]}
-            {...chartSetting}
-          />  
-        </Box>
+        <Box sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px"  }}>
 
+                {/*For the Grade Level Chart*/}
+        {allGrades.length > 0 && (
+            <BarChart
+              dataset={allGrades}
+              xAxis={[{ scaleType: 'band', dataKey: 'id',  label: "Grade Level"}]}
+              series={[{ dataKey: 'value', label: 'Registered Students' }]}
+              {...chartSetting}
+            />
+         )}
+        </Box>
+  
        </Box>
-   
+    
     </Box>
   )
 }
