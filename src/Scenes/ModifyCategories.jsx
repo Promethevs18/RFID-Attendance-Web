@@ -348,9 +348,7 @@ const deleteOption = () => {
                           </DialogActions>
                         </Dialog>
             </Box>
-          </Box>
-
-          
+          </Box> 
                     {/* For the track/strand section */}
           <Box display="flex">
              <Box marginTop="70px">
@@ -432,7 +430,7 @@ const deleteOption = () => {
                       </Box>
                   </Box>
           </Box>
-          </Box>
+        </Box>
 
         <Box 
           display="flex" 

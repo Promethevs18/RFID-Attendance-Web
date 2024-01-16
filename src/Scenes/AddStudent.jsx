@@ -1,12 +1,13 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { Box, Avatar, Button, TextField } from "@mui/material";
 import Header from "../Components/Header";
 import * as yup from "yup";
 import { Form, Formik } from "formik";
-import { useState } from "react";
 import { toast } from "react-toastify";
-import {ref as ref_storage, getDownloadURL, uploadBytesResumable, getStorage} from "firebase/storage"
 import {getDatabase, ref as ref_database, update } from "firebase/database"
+import { DataGrid } from "@mui/x-data-grid";
+import { useTheme } from "@emotion/react";
+import { tokens } from "../theme";
 
 
 
@@ -16,7 +17,6 @@ const AddStudent = () => {
         student_name: "",
         id_num: "",
         grade_level: "",
-        student_img: "",
         strand: "",
         address: "",
         caretaker_name: "",
@@ -24,10 +24,8 @@ const AddStudent = () => {
       };
     
       const formikRef = useRef(null);
-      const [image, setImage] = useState("https://www.pngall.com/wp-content/uploads/2/Upload-Transparent.png");
       const database = getDatabase();
-      const storage = getStorage();
-    
+
     
 
       const phoneRegExp =
@@ -55,13 +53,11 @@ const AddStudent = () => {
                 //This is for the per grade level
               ref_database(database, "Grade Level/" + values.grade_level + "/" + values.id_num),
               {...values,
-                student_img: image,
               })   
               update( 
                     //This is for the strand 
                 ref_database(database, "Strand/" + values.strand + "/" + values.id_num),
                     {...values,
-                        student_img: image,
                 })
         
           } catch(mali){
@@ -71,64 +67,42 @@ const AddStudent = () => {
         toast.success("Student added successfully!");
       };
 
+      //---------------------------------------------------------------------
+      //DataGrid codes
 
-    const uploadImage = (nakuha) => {
-        toast.info("File uploading...");
-        const uploadFile =() =>{
-          const storageRef = ref_storage(storage, "Student Images/" + nakuha.name);
-          const uploadTask = uploadBytesResumable(storageRef, nakuha);
-          uploadTask.on("state_changed", (snapshot)=>{
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            toast.info("Upload is " + progress + " % done")
-          }, (error) =>{
-            toast.error(error)
-          }, () =>{
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadUrl) =>{
-              toast.success("Image uploaded to the database successfully!");
-              setImage(downloadUrl)
-            })
-          })
-        }
-        nakuha && uploadFile()
-      }
-    
+      //DataGrid rows
+        const [dataRows, setRows] = useState([
+            { id: 1, name: 'John Doe', age: 25, city: 'New York' },
+            { id: 2, name: 'Jane Doe', age: 30, city: 'San Francisco' },
+        ]);
+
+        //Datagrid table columns
+        const dataColumns = [
+            { field: 'id', headerName: 'Student name', flex: 1 },
+        ];
+        const tema = useTheme();
+        const colors = tokens(tema.palette.mode)
+
+
 
   return (
     <Box m="20px">
             {/* HEADER */}
-            <Header title="ADD STUDENT" subtitle="This section allows you to add student information to our database"/>
+            <Header title="STUDENT SECTION CUSTOMIZATION" subtitle="This section allows you to perform CRUD (Create, Read, Update, Delete) student information to our database"/>
+            <Box m="20px" display="flex" justifyContent="space-between">
+              <Box display="flex">
+                  <Formik 
+                  innerRef={formikRef}
+                  initialValues={initialValues}
+                  validationSchema={validation}
+                  onSubmit={addStudent}
+                  >
+                      {({values, errors, touched, handleBlur, handleChange}) => (
+                        <Form>
 
-            <Formik 
-                innerRef={formikRef}
-                initialValues={initialValues}
-                validationSchema={validation}
-                onSubmit={addStudent}
-            >
-                {({values, errors, touched, handleBlur, handleChange}) => (
-                    <Form>
-                        <Box display="flex" justifyContent="start" m="20px">
-                               <input
-                                type="file"
-                                style={{display: "none"}}
-                                id="imageUpload"
-                                accept="image/*"
-                                onChange={(e) => uploadImage(e.target.files[0])}
-                                />
-                            <Avatar
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    height: "30%",
-                                    width: "30%",
-                                }}
-                                alt = "service-image"
-                                src = {image}
-                                onClick={() => {
-                                document.getElementById("imageUpload").click();
-                                }}
-                                />
-                      </Box>
-                          <Box display="flex" justifyContent="start" m="20px">
+                   
+                     <Box justifyContent="start">
+                        <Box display="flex" m="20px">
                                 <TextField
                                     variant="filled"
                                     fullWidth
@@ -141,97 +115,100 @@ const AddStudent = () => {
                                     error={!!touched.student_name && !!errors.student_name}
                                     helperText={touched.student_name && 
                                         <span className="error-message">{errors.student_name}</span>}
-                                    sx={{ maxWidth: "40%", marginRight: "15px" }}
+                                    sx={{ maxWidth: "50%", marginRight: "2px" }}
                                 />
-                            <TextField
-                                variant="filled"
-                                fullWidth
-                                type="text"
-                                value={values.id_num}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label = "ID Number"
-                                name="id_num"
-                                error={!!touched.id_num && !! errors.id_num}
-                                helperText={touched.id_num &&
-                                <span className="error-message">{errors.id_num}</span>}
-                                sx={{maxWidth: "40%", marginLeft: "15px"}}
-                            />
-                            <TextField
-                                variant="filled"
-                                fullWidth
-                                type="text"
-                                value={values.grade_level}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label = "Grade Level (G11 or G12)"
-                                name="grade_level"
-                                error={!!touched.grade_level && !! errors.grade_level}
-                                helperText={touched.grade_level && 
-                                    <span className="error-message">{errors.grade_level}</span>}
-                                sx={{maxWidth: "20%", marginLeft: "15px"}}
-                            />
-                           </Box>
-                        <Box display="flex" justifyContent="center" m="20px">               
-                             <TextField
-                                variant="filled"
-                                fullWidth
-                                type="text"
-                                value={values.address}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label = "Physical Address"
-                                name="address"
-                                error={!!touched.address && !! errors.address}
-                                helperText={touched.address && 
-                                    <span className="error-message">{errors.address}</span>}
-                                sx={{maxWidth: "33%", marginLeft: "15px"}}
-                            />
-                             
-                             <TextField
-                                variant="filled"
-                                fullWidth
-                                type="text"
-                                value={values.caretaker_name}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label = "Parent/Guardian Name"
-                                name="caretaker_name"
-                                error={!!touched.caretaker_name && !! errors.caretaker_name}
-                                helperText={touched.caretaker_name && 
-                                    <span className="error-message">{errors.caretaker_name}</span>}
-                                sx={{maxWidth: "33%", marginLeft: "15px"}}
-                            />
-                             <TextField
-                                variant="filled"
-                                fullWidth
-                                type="text"
-                                value={values.caretaker_num}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label = "Caretaker's phone number"
-                                name="caretaker_num"
-                                error={!!touched.caretaker_num && !! errors.caretaker_num}
-                                helperText={touched.caretaker_num &&
-                                    <span className="error-message">{errors.caretaker_num}</span>}
-                                sx={{maxWidth: "33%", marginLeft: "15px"}}
-                            />
-                            <TextField
-                                variant="filled"
-                                fullWidth
-                                type="text"
-                                value={values.strand}
-                                onBlur={handleBlur}
-                                onChange={handleChange}
-                                label = "Student's Strand"
-                                name="strand"
-                                error={!!touched.strand && !! errors.strand}
-                                helperText={<touched className="str"></touched> &&
-                                    <span className="error-message">{errors.strand}</span>}
-                                sx={{maxWidth: "33%", marginLeft: "15px"}}
-                            />
-                            
+                                <TextField
+                                    variant="filled"
+                                    fullWidth
+                                    type="text"
+                                    value={values.id_num}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    label = "ID Number"
+                                    name="id_num"
+                                    error={!!touched.id_num && !! errors.id_num}
+                                    helperText={touched.id_num &&
+                                    <span className="error-message">{errors.id_num}</span>}
+                                    sx={{maxWidth: "50%", marginLeft: "15px"}}
+                                />
                         </Box>
+                        <Box display="flex" m="5px"> 
+                                <TextField
+                                    variant="filled"
+                                        fullWidth
+                                        type="text"
+                                        value={values.grade_level}
+                                        onBlur={handleBlur}
+                                        onChange={handleChange}
+                                        label = "Grade Level (G11 or G12)"
+                                        name="grade_level"
+                                        error={!!touched.grade_level && !! errors.grade_level}
+                                        helperText={touched.grade_level && 
+                                            <span className="error-message">{errors.grade_level}</span>}
+                                    sx={{maxWidth: "50%", marginLeft: "15px"}}
+                                />              
+                                <TextField
+                                    variant="filled"
+                                        fullWidth
+                                        type="text"
+                                        value={values.address}
+                                        onBlur={handleBlur}
+                                        onChange={handleChange}
+                                        label = "Physical Address"
+                                        name="address"
+                                        error={!!touched.address && !! errors.address}
+                                        helperText={touched.address && 
+                                            <span className="error-message">{errors.address}</span>}
+                                    sx={{maxWidth: "50%", marginLeft: "10px"}}
+                                /> 
+                        </Box>
+                        <Box display="flex" m="5px">
+                                <TextField
+                                    variant="filled"
+                                    fullWidth
+                                    type="text"
+                                    value={values.caretaker_name}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    label = "Parent/Guardian Name"
+                                    name="caretaker_name"
+                                    error={!!touched.caretaker_name && !! errors.caretaker_name}
+                                    helperText={touched.caretaker_name && 
+                                        <span className="error-message">{errors.caretaker_name}</span>}
+                                    sx={{maxWidth: "50%", marginLeft: "15px", marginTop:"10px"}}
+                                />
+                                <TextField
+                                    variant="filled"
+                                    fullWidth
+                                    type="text"
+                                    value={values.caretaker_num}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    label = "Caretaker's phone number"
+                                    name="caretaker_num"
+                                    error={!!touched.caretaker_num && !! errors.caretaker_num}
+                                    helperText={touched.caretaker_num &&
+                                        <span className="error-message">{errors.caretaker_num}</span>}
+                                    sx={{maxWidth: "50%", marginLeft: "15px", marginTop: "10px"}}
+                                />
+                        </Box>
+                        <Box m="5px" display="flex">
+                                <TextField
+                                    variant="filled"
+                                    fullWidth
+                                    type="text"
+                                    value={values.strand}
+                                    onBlur={handleBlur}
+                                    onChange={handleChange}
+                                    label = "Student's Strand"
+                                    name="strand"
+                                    error={!!touched.strand && !! errors.strand}
+                                    helperText={<touched className="str"></touched> &&
+                                        <span className="error-message">{errors.strand}</span>}
+                                    sx={{ marginLeft: "15px", marginTop: "10px"}}
+                                />      
+                        </Box>
+                        {/* Add Button */}
                         <Box display="flex" justifyContent="center" m="20px">
                             <Button
                             variant="contained"
@@ -241,11 +218,40 @@ const AddStudent = () => {
                             Add Student to the Database
                             </Button>
                         </Box>
-                    </Form>
-                        )}
-
-            </Formik>
-        
+                 </Box>
+                 </Form>
+                      )}
+                  </Formik>
+              </Box>
+              <Box  display="flex" 
+                    justifyContent="center"
+                    alignContent="center" 
+                    height="75vh"
+                    sx={{
+                        "& .MuiDataGrid-root": {
+                        border: "none",
+                        },
+                        "& .MuiDataGrid-cell": {
+                        borderBottom: "none",
+                        },
+                        "& .name-column--cell": {
+                        color: colors.white[200],
+                        },
+                        "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: colors.maroon[700],
+                        borderBottom: "none",
+                        },
+                        "& .MuiDataGrid-virtualScroller": {
+                        backgroundColor: colors.yellow[700],
+                        },
+                        "& .MuiDataGrid-footerContainer": {
+                        borderTop: "none",
+                        backgroundColor: colors.maroon[600],
+                        },
+                 }}>
+                  <DataGrid columns={dataColumns} rows={dataRows}/>
+              </Box>             
+            </Box> 
     </Box>
   )
 }

@@ -1,5 +1,3 @@
-import { red } from "@mui/material/colors";
-import { color } from "@mui/system";
 import * as React from "react";
 
 export default class Clock extends React.Component {

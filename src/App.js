@@ -11,7 +11,6 @@ import Dashboard from "./Scenes/Dashboard";
 import Authentication from "./Scenes/Authentication";
 import AddStudent from "./Scenes/AddStudent";
 import StudentLister from "./Scenes/StudentLister";
-import Clock from "./Globals/Clock";
 import ModifyCategories from "./Scenes/ModifyCategories";
 
 function App() {
