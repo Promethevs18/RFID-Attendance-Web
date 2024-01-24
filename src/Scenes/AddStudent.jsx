@@ -32,8 +32,9 @@ const AddStudent = () => {
   };
 
   const formikRef = useRef(null);
-  // eslint-disable-next-line
+ 
   const phoneRegExp =
+ // eslint-disable-next-line 
     /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
 
   const validation = yup.object().shape({
@@ -64,13 +65,19 @@ const AddStudent = () => {
         update(
           //This is for the per grade level
           ref_database(database, "Grade Level/" + values.grade_level + "/" + values.id_num),
-          { ...values }
+          { ...values, status: "enrolled" }
+           
         );
         update(
           //This is for the strand
           ref_database(database, "Strand/" + values.strand + "/" + values.id_num),
-          { ...values }
+          { ...values , status: "enrolled"}
         );
+          //This is for the grand list
+        update(
+          ref_database(database, "Grand List/" + values.id_num),
+          {...values, status: "enrolled"}
+        )
       } catch (mali) {
         toast.error("Error uploading data due to: ", mali);
       }
@@ -85,8 +92,6 @@ const AddStudent = () => {
 
   //DataGrid rows
   const [dataRows, setRows] = useState([]);
-  const [editingRowId, setEditingRowId] = useState(null);
-  const [editedRows, setEditedRows] = useState([]);
 
   //get the data from the Grade Level
   useEffect(() => {
@@ -117,11 +122,11 @@ const AddStudent = () => {
   //Datagrid table columns
   const dataColumns = [
     { field: "id_num", headerName: "Student ID", flex: 1 },
-    { field: "student_name", headerName: "Student Name", flex: 1 },
-    { field: "address", headerName: "Student Address", flex: 1, editable: true },
-    { field: "grade_level", headerName: "Grade Level", flex: 1, editable: true },
-    { field: "strand", headerName: "Strand/Track", flex: 1, editable: true },
-    { field: "caretaker_name", headerName: "Caretaker Name", flex: 1, editable: true },
+    { field: "student_name", headerName: "Student Name", flex: 1},
+    { field: "address", headerName: "Student Address", flex: 1},
+    { field: "grade_level", headerName: "Grade Level", flex: 1},
+    { field: "strand", headerName: "Strand/Track", flex: 1},
+    { field: "caretaker_name", headerName: "Caretaker Name", flex: 1},
     {
       field: "caretaker_num",
       headerName: "Caretaker Number",
@@ -132,6 +137,8 @@ const AddStudent = () => {
   ];
   const tema = useTheme();
   const colors = tokens(tema.palette.mode);
+
+   
 
   //End of DataGrid codes
 
