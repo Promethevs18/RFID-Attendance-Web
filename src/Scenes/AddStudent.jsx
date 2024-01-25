@@ -5,6 +5,8 @@ import * as yup from "yup";
 import { Form, Formik } from "formik";
 import { toast } from "react-toastify";
 import {
+  child,
+  get,
   getDatabase,
   onValue,
   ref,
@@ -97,20 +99,17 @@ const AddStudent = () => {
   useEffect(() => {
     const kuhanin = () => {
       const listahan = [];
-      const getList = ref(database, "Grade Level/");
+      const getList = ref(database, "Grand List/");
       onValue(
         getList,
         (snapshot) => {
-          snapshot.forEach((studentSnap) => {
-            const nakuha = studentSnap.val();
-
-            Object.keys(nakuha).forEach((val) => {
-              const kuhain = {
-                id: val,
-                ...nakuha[val],
-              };
-              listahan.push(kuhain);
-            });
+          const nakuha = snapshot.val();
+          Object.keys(nakuha).forEach((val) => {
+            const kuhain = {
+              id: val,
+              ...nakuha[val],
+            };
+            listahan.push(kuhain);
           });
           setRows([...listahan]);
         }
@@ -119,9 +118,43 @@ const AddStudent = () => {
     kuhanin();
   }, [database]);
 
-  //Datagrid table columns
+  //Datagrid table columns and codes
+
+  const [selectionModel, setSelectionModel] = useState([]);
+  const [fieldFalse, setFieldFalse] = useState(false)
+
+  //THIS CODE IS RESPONSIBLE TO GET THE DATA BASED SA SELECTION SA TALBE
+  //UPON GETTING THE DATA, IT WILL ASSIGN THE NECESSARIES SA LOOB NG TEXTFIELDS FOR EDITING
+  const checkSelected = (newSelected) => {
+    setSelectionModel(newSelected)
+    setShowButton(true)
+
+    const takeUser = ref(database);
+    get(child(takeUser, `Grand List/${selectionModel}`))
+    .then((snapshot) => {
+        const updatedIni = {
+          student_name: snapshot.val().student_name || "",
+          id_num: snapshot.val().id_num || "",
+          grade_level: snapshot.val().grade_level || "",
+          address: snapshot.val().address || "",
+          caretaker_name: snapshot.val().caretaker_name|| "",
+          caretaker_num: snapshot.val().caretaker_num|| "",
+          strand: snapshot.val().strand || ""
+        }
+        formikRef.current.setFieldValue("student_name", updatedIni.student_name);
+        formikRef.current.setFieldValue("id_num", updatedIni.id_num);
+        formikRef.current.setFieldValue("grade_level", updatedIni.grade_level);
+        formikRef.current.setFieldValue("address", updatedIni.address);        
+        formikRef.current.setFieldValue("caretaker_name", updatedIni.caretaker_name);        
+        formikRef.current.setFieldValue("caretaker_num", updatedIni.caretaker_num);
+        formikRef.current.setFieldValue("strand", updatedIni.strand); 
+            
+    })
+    setFieldFalse(true)
+  }
+
   const dataColumns = [
-    { field: "id_num", headerName: "Student ID", flex: 1 },
+    { field: "id_num", headerName: "Student ID", flex: 1},
     { field: "student_name", headerName: "Student Name", flex: 1},
     { field: "address", headerName: "Student Address", flex: 1},
     { field: "grade_level", headerName: "Grade Level", flex: 1},
@@ -135,11 +168,44 @@ const AddStudent = () => {
     },
    
   ];
+
   const tema = useTheme();
   const colors = tokens(tema.palette.mode);
 
-   
+  const [showButton, setShowButton] = useState(false);
 
+  const updateData = (values) => {
+    if (
+      values.grade_level != null &&
+      values.strand != null &&
+      values.address != null &&
+      values.caretaker_name != null &&
+      values.caretaker_num != null
+    ) {
+      try {
+        update(
+          //This is for the per grade level
+          ref_database(database, "Grade Level/" + values.grade_level + "/" + values.id_num),
+          { ...values, status: "updated" }
+           
+        );
+        update(
+          //This is for the strand
+          ref_database(database, "Strand/" + values.strand + "/" + values.id_num),
+          { ...values , status: "updated"}
+        );
+          //This is for the grand list
+        update(
+          ref_database(database, "Grand List/" + values.id_num),
+          {...values, status: "updated"}
+        )
+      } catch (mali) {
+        toast.error("Error uploading data due to: ", mali);
+      }
+    }
+    toast.success("Student updated successfully!");
+    setFieldFalse(false)
+  }
   //End of DataGrid codes
 
   //UI part
@@ -161,8 +227,10 @@ const AddStudent = () => {
             {({ values, errors, touched, handleBlur, handleChange }) => (
               <Form>
                 <Box justifyContent="start">
-                  <Box display="flex" m="20px">
+
+                  <Box display="flex" m="20px">  
                     <TextField
+                      disabled={fieldFalse}
                       variant="filled"
                       fullWidth
                       type="text"
@@ -183,6 +251,7 @@ const AddStudent = () => {
                     />
                     <TextField
                       variant="filled"
+                      disabled={fieldFalse}
                       fullWidth
                       type="text"
                       value={values.id_num}
@@ -298,13 +367,15 @@ const AddStudent = () => {
                     }
                     sx={{ marginLeft: "15px", marginTop: "10px" }}
                   />
-                </Box>
-                {/* Add Button */}
-                <Box display="flex" justifyContent="center" m="20px">
-                  <Button variant="contained" color="secondary" type="submit">
-                    Add Student to the Database
-                  </Button>
-                </Box>
+                </Box>   
+                {showButton && (
+                 <Button 
+                  variant="contained" 
+                  color="secondary" 
+                  sx={{m:"20px"}}
+                  onClick={() => updateData(values)}
+                  >Update Information</Button>   
+                )}
               </Box>
             </Form>
           )}
@@ -349,7 +420,12 @@ const AddStudent = () => {
           slots={
             {
             toolbar: GridToolbar,
+           
           }}
+          onRowSelectionModelChange={(newSelection) => {
+            checkSelected(newSelection)
+          }}
+          rowSelectionModel={selectionModel}
         />
       </Box>
     </Box>

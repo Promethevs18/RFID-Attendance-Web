@@ -97,7 +97,7 @@ const Dashboard = () => {
   const oneColumn = [
     { field: "id_num", headerName: "Student ID", flex: 1 },
     { field: "student_name", headerName: "Student Name", flex: 1},
-    { field: "strand", headerName: "Time Out", flex: 1},
+    { field: "strand", headerName: "Strand", flex: 1},
     { field: "timeIn", headerName: "Time In", flex: 1},
     { field: "timeOut", headerName: "Time Out", flex: 1},
   ]

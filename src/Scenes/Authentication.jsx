@@ -1,11 +1,10 @@
 import { Box, Button, TextField } from '@mui/material'
 import React from 'react'
-import Header from '../Components/Header'
 import { Form, Formik } from 'formik'
 import * as yup from "yup"
-import {signInWithEmailAndPassword} from "firebase/auth"
-import { auth } from "../firebase"
+import {getAuth, sendPasswordResetEmail, signInWithEmailAndPassword, } from "firebase/auth"
 import { toast } from 'react-toastify'
+import {auth} from "../firebase"
 import { useNavigate } from 'react-router-dom'
 
 
@@ -36,55 +35,81 @@ const Authentication = ({setUser, setActive}) => {
       
   }
 
+  const nalimutan = (balyu) => {
+      const newAuth = getAuth();
+      sendPasswordResetEmail(newAuth, balyu)
+      .then(() => {
+        toast.success("Email sent")
+      }).catch((error) =>{
+        toast.error(error)
+      })
+  }
+
   return (
-    <Box m="20px">
-      <Header title="AUTHENTICATION PAGE" subtitle="Log in to the website using your default credentails to access functionalities"/>
-      
-      <Formik 
-        initialValues={initialValues}
-        validationSchema={userSchema}
-        onSubmit={loginToSystem}
-        >
-          {({values, errors, touched, handleChange, handleBlur}) =>(
-            <Form>
-              <Box display="grid" gap="30px" gridTemplateColumns="repeat(4, minmax(0, 1fr))"
-              >
-                <TextField
-                    fullWidth
-                    variant="filled"
-                    type="text"
-                    label="Email address"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.email}
-                    name="email"
-                    error={!!touched.email && !!errors.email}
-                    helperText={touched.email && errors.email}
-                    sx={{ gridColumn: "span 2" }}/>
+    <Box m="20px" justifyContent="center" alignItems="center" marginTop="170px">
+     
 
-                <TextField
-                    fullWidth
-                    variant="filled"
-                    type="password"
-                    label="Password"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.password}
-                    name="password"
-                    error={!!touched.password && !!errors.password}
-                    helperText={touched.password && errors.password}
-                    sx={{ gridColumn: "span 2" }}
-                  />
-              </Box>
+       <Box display="flex" justifyContent="space-evenly">
+            <Box padding="20px" sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px"  }}>
+              <Box>
+                  <image src='https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/8081%20(2).png?alt=media&token=398f3c20-a2b2-4025-b269-b5acf4f501d3' 
+                  alt='perps-image'
+                  style={{width:"500px"}}/>
+                </Box> 
+               <Box marginTop="20px">
+               <Formik 
+                initialValues={initialValues}
+                validationSchema={userSchema}
+                onSubmit={loginToSystem}
+                >
+                  {({values, errors, touched, handleChange, handleBlur}) =>(
+                    <Form>
+                      <Box display="flex" alignContent="center"
+                      >
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            type="text"
+                            label="Email address"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            value={values.email}
+                            name="email"
+                            error={!!touched.email && !!errors.email}
+                            helperText={touched.email && errors.email}
+                            sx={{ gridColumn: "span 2" }}/>
+                      </Box>
 
-              <Box display="flex" justifyContent="center" m="20px">
-                <Button type="submit" color="secondary" variant="contained">
-                  Log in
-                </Button>
-              </Box>
-            </Form>
-          )}
-        </Formik>
+                      <Box>
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            type="password"
+                            label="Password"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            value={values.password}
+                            name="password"
+                            error={!!touched.password && !!errors.password}
+                            helperText={touched.password && errors.password}
+                            sx={{ gridColumn: "span 2", marginTop:"20px" }}
+                          />
+                          <Button color='primary' variant='secondary' sx={{marginTop: '20px'}} onClick={() => nalimutan(values.email)}>Forgot password?</Button>
+                      </Box>
+                      <Box display="flex" justifyContent="center" m="20px">
+                        <Button type="submit" color="secondary" variant="contained">
+                          Log in
+                        </Button>
+                      </Box>
+                    </Form>
+                  )}
+           </Formik>
+        </Box>    
+            </Box>
+       </Box>
+       <Box>
+       </Box>
+       
     </Box>
   )
 }
