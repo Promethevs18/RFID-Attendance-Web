@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box, Button, TextField } from "@mui/material";
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
 import Header from "../Components/Header";
 import * as yup from "yup";
 import { Form, Formik } from "formik";
@@ -21,6 +21,14 @@ import { tokens } from "../theme";
 const AddStudent = () => {
   //global properties
   const database = getDatabase();
+  const [napilingLevel, setNapilingLevel] = useState("");
+  const [mgaLevel, setMgaLevel] = useState([])
+  
+  const [napilingBranch, setNapilingBranch] = useState("")
+  const [mgaBranch, setBranch] = useState([])
+
+  const [hideAdd, setHideAdd] = useState(true)
+
 
   //Adding student code section
   const initialValues = {
@@ -57,8 +65,6 @@ const AddStudent = () => {
     if (
       values.student_name != null &&
       values.id_num != null &&
-      values.grade_level != null &&
-      values.strand != null &&
       values.address != null &&
       values.caretaker_name != null &&
       values.caretaker_num != null
@@ -66,25 +72,28 @@ const AddStudent = () => {
       try {
         update(
           //This is for the per grade level
-          ref_database(database, "Grade Level/" + values.grade_level + "/" + values.id_num),
-          { ...values, status: "enrolled" }
+          ref_database(database, "Grade Level/" + napilingLevel + "/" + values.id_num),
+          { ...values, status: "enrolled", grade_level: napilingLevel, strand: napilingBranch }
            
         );
         update(
           //This is for the strand
-          ref_database(database, "Strand/" + values.strand + "/" + values.id_num),
-          { ...values , status: "enrolled"}
+          ref_database(database, "Strand/" + napilingBranch + "/" + values.id_num),
+          { ...values , status: "enrolled", grade_level: napilingLevel, strand: napilingBranch }
         );
           //This is for the grand list
         update(
           ref_database(database, "Grand List/" + values.id_num),
-          {...values, status: "enrolled"}
+          {...values, status: "enrolled", grade_level: napilingLevel, strand: napilingBranch }
         )
       } catch (mali) {
         toast.error("Error uploading data due to: ", mali);
       }
     }
     toast.success("Student added successfully!");
+    setTimeout(() => {
+      window.location.reload()
+    }, 3000)
   };
 
   // END of add student codes
@@ -128,6 +137,7 @@ const AddStudent = () => {
   const checkSelected = (newSelected) => {
     setSelectionModel(newSelected)
     setShowButton(true)
+    setHideAdd(false)
 
     const takeUser = ref(database);
     get(child(takeUser, `Grand List/${selectionModel}`))
@@ -143,15 +153,18 @@ const AddStudent = () => {
         }
         formikRef.current.setFieldValue("student_name", updatedIni.student_name);
         formikRef.current.setFieldValue("id_num", updatedIni.id_num);
-        formikRef.current.setFieldValue("grade_level", updatedIni.grade_level);
         formikRef.current.setFieldValue("address", updatedIni.address);        
         formikRef.current.setFieldValue("caretaker_name", updatedIni.caretaker_name);        
         formikRef.current.setFieldValue("caretaker_num", updatedIni.caretaker_num);
-        formikRef.current.setFieldValue("strand", updatedIni.strand); 
+        
+        setNapilingLevel(updatedIni.grade_level)
+        setNapilingBranch(updatedIni.strand)
             
     })
     setFieldFalse(true)
   }
+  //END OF DATA EDITING CODES
+
 
   const dataColumns = [
     { field: "id_num", headerName: "Student ID", flex: 1},
@@ -176,8 +189,6 @@ const AddStudent = () => {
 
   const updateData = (values) => {
     if (
-      values.grade_level != null &&
-      values.strand != null &&
       values.address != null &&
       values.caretaker_name != null &&
       values.caretaker_num != null
@@ -202,11 +213,67 @@ const AddStudent = () => {
       } catch (mali) {
         toast.error("Error uploading data due to: ", mali);
       }
+      toast.success("Student updated successfully!");
+      setFieldFalse(false)
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000)
     }
-    toast.success("Student updated successfully!");
-    setFieldFalse(false)
+    else {
+      toast.error("An error occured during the update. Contact your developer")
+    }
+    
   }
   //End of DataGrid codes
+
+  //START OF SELECT UI FUNCTIONALITIES (YUNG DROPDOWNS)
+
+  //FIRST, FOR GRADE LEVEL
+
+  useEffect(() => {
+    const levelArray = []
+    const kunin = () => {
+      const levelData = ref(database, "Grade Level/");
+      onValue(levelData, (snapshot) => {
+        snapshot.forEach((snappy) => {
+          const kuninLevel = {
+            id: snappy.key
+          }
+          levelArray.push(kuninLevel)
+          setMgaLevel(levelArray)
+        })
+      })
+    }
+    kunin();
+  })
+
+  const changeHandler = (nyare) => {
+    setNapilingLevel(nyare.target.value)
+  }
+
+  //FOR THE STUDENT STRAND
+
+  useEffect(() => {
+    const branches = []
+    const getNow = () => {
+    const kuninBranches = ref(database, "Strand/")
+    onValue(kuninBranches, (snapshot) => {
+      snapshot.forEach((value) => {
+        const taken = {
+          id: value.key
+        }
+        branches.push(taken)
+      })
+      setBranch(branches)
+    })
+  }
+  getNow();
+  })
+
+  const handleChanger = (nyare) => {
+    setNapilingBranch(nyare.target.value)
+  }
+
 
   //UI part
   return (
@@ -222,12 +289,10 @@ const AddStudent = () => {
             innerRef={formikRef}
             initialValues={initialValues}
             validationSchema={validation}
-            onSubmit={addStudent}
           >
             {({ values, errors, touched, handleBlur, handleChange }) => (
               <Form>
                 <Box justifyContent="start">
-
                   <Box display="flex" m="20px">  
                     <TextField
                       disabled={fieldFalse}
@@ -249,45 +314,25 @@ const AddStudent = () => {
                       }
                       sx={{ maxWidth: "50%", marginRight: "2px" }}
                     />
-                    <TextField
-                      variant="filled"
-                      disabled={fieldFalse}
-                      fullWidth
-                      type="text"
-                      value={values.id_num}
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      label="ID Number"
-                      name="id_num"
-                      error={!!touched.id_num && !!errors.id_num}
-                      helperText={
-                        touched.id_num && (
-                          <span className="error-message">{errors.id_num}</span>
-                        )
-                      }
-                      sx={{ maxWidth: "50%", marginLeft: "15px" }}
-                    />
+                   <FormControl sx={{width: "70%", marginLeft:"20px"}}>
+                    <InputLabel id="gradeId">Select a Strand/Track</InputLabel>
+                      <Select
+                      labelId="gradeId"              
+                      label="Select a Grade Level"
+                      onChange={handleChanger}
+                      value={napilingBranch}
+                      >
+                        {mgaBranch.map((option) => (
+                          <MenuItem 
+                          key={option.id} value={option.id}>
+                            {option.id}
+                          </MenuItem>
+                        ))}
+                        
+                      </Select>
+                    </FormControl>
                   </Box>
                   <Box display="flex" m="5px">
-                    <TextField
-                      variant="filled"
-                      fullWidth
-                      type="text"
-                      value={values.grade_level}
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      label="Grade Level (G11 or G12)"
-                      name="grade_level"
-                      error={!!touched.grade_level && !!errors.grade_level}
-                      helperText={
-                        touched.grade_level && (
-                          <span className="error-message">
-                            {errors.grade_level}
-                          </span>
-                        )
-                      }
-                      sx={{ maxWidth: "50%", marginLeft: "15px" }}
-                    />
                     <TextField
                       variant="filled"
                       fullWidth
@@ -305,8 +350,25 @@ const AddStudent = () => {
                           </span>
                         )
                       }
-                      sx={{ maxWidth: "50%", marginLeft: "10px" }}
+                      sx={{ maxWidth: "50%", marginLeft: "15px" }}
                     />
+                    <FormControl sx={{width: "50%", marginLeft:"20px"}}>
+                    <InputLabel id="gradeId">Select a Grade Level</InputLabel>
+                      <Select
+                      labelId="gradeId"              
+                      label="Select a Grade Level"
+                      onChange={changeHandler}
+                      value={napilingLevel}
+                      >
+                        {mgaLevel.map((option) => (
+                          <MenuItem 
+                          key={option.id} value={option.id}>
+                            {option.id}
+                          </MenuItem>
+                        ))}
+                        
+                      </Select>
+                    </FormControl>
                   </Box>
                   <Box display="flex" m="5px">
                     <TextField
@@ -351,23 +413,33 @@ const AddStudent = () => {
                 </Box>
                 <Box m="5px" display="flex">
                   <TextField
-                    variant="filled"
-                    fullWidth
-                    type="text"
-                    value={values.strand}
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    label="Student's Strand"
-                    name="strand"
-                    error={!!touched.strand && !!errors.strand}
-                    helperText={
-                      <touched className="str"></touched> && (
-                        <span className="error-message">{errors.strand}</span>
-                      )
-                    }
+                      variant="filled"
+                      disabled={fieldFalse}
+                      fullWidth
+                      type="text"
+                      value={values.id_num}
+                      onBlur={handleBlur}
+                      onChange={handleChange}
+                      label="ID Number"
+                      name="id_num"
+                      error={!!touched.id_num && !!errors.id_num}
+                      helperText={
+                        touched.id_num && (
+                          <span className="error-message">{errors.id_num}</span>
+                        )
+                      }
                     sx={{ marginLeft: "15px", marginTop: "10px" }}
                   />
-                </Box>   
+                </Box> 
+                {hideAdd &&( 
+                  <Button 
+                  variant="contained" 
+                  color="secondary" 
+                  sx={{m:"20px"}}
+                  onClick={() => addStudent(values)}
+                  >Add Now Information</Button>   
+                  )}
+         
                 {showButton && (
                  <Button 
                   variant="contained" 
