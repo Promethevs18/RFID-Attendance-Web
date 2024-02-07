@@ -11,6 +11,7 @@ import {
   onValue,
   ref,
   ref as ref_database,
+  remove,
   update,
 } from "firebase/database";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
@@ -187,6 +188,7 @@ const AddStudent = () => {
 
   const [showButton, setShowButton] = useState(false);
 
+  //Updating
   const updateData = (values) => {
     if (
       values.address != null &&
@@ -196,19 +198,19 @@ const AddStudent = () => {
       try {
         update(
           //This is for the per grade level
-          ref_database(database, "Grade Level/" + values.grade_level + "/" + values.id_num),
-          { ...values, status: "updated" }
+          ref_database(database, "Grade Level/" + napilingLevel + "/" + values.id_num),
+          { ...values, status: "updated", grade_level: napilingLevel, strand: napilingBranch }
            
         );
         update(
           //This is for the strand
-          ref_database(database, "Strand/" + values.strand + "/" + values.id_num),
-          { ...values , status: "updated"}
+          ref_database(database, "Strand/" + napilingBranch + "/" + values.id_num),
+          { ...values , status: "updated", grade_level: napilingLevel, strand: napilingBranch}
         );
           //This is for the grand list
         update(
           ref_database(database, "Grand List/" + values.id_num),
-          {...values, status: "updated"}
+          {...values, status: "updated", grade_level: napilingLevel, strand: napilingBranch}
         )
       } catch (mali) {
         toast.error("Error uploading data due to: ", mali);
@@ -224,6 +226,42 @@ const AddStudent = () => {
     }
     
   }
+
+  //Removing a student data
+  const removeData = (values) => {
+    if (
+      values.address != null &&
+      values.caretaker_name != null &&
+      values.caretaker_num != null
+    ) {
+      try {
+        remove(
+          //This is for the per grade level
+          ref_database(database, "Grade Level/" + napilingLevel + "/" + values.id_num)
+        );
+        remove(
+          //This is for the strand
+          ref_database(database, "Strand/" + napilingBranch + "/" + values.id_num)
+        );
+          //This is for the grand list
+        remove(
+          ref_database(database, "Grand List/" + values.id_num)
+        )
+      } catch (mali) {
+        toast.error("Error uploading data due to: ", mali);
+      }
+      toast.success("Student updated successfully!");
+      setFieldFalse(false)
+      setTimeout(() => {
+        window.location.reload()
+      }, 3000)
+    }
+    else {
+      toast.error("An error occured during the update. Contact your developer")
+    }
+    
+  }
+
   //End of DataGrid codes
 
   //START OF SELECT UI FUNCTIONALITIES (YUNG DROPDOWNS)
@@ -447,6 +485,14 @@ const AddStudent = () => {
                   sx={{m:"20px"}}
                   onClick={() => updateData(values)}
                   >Update Information</Button>   
+                )}
+                {showButton && (
+                 <Button 
+                  variant="contained" 
+                  color="secondary" 
+                  sx={{m:"20px"}}
+                  onClick={() => removeData(values)}
+                  >Delete Information</Button>   
                 )}
               </Box>
             </Form>

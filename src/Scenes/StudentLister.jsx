@@ -1,6 +1,6 @@
 import React from 'react'
 import Header from '../Components/Header'
-import { Avatar, Box } from '@mui/material'
+import { Box } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { getDatabase, onValue, ref } from 'firebase/database'
 import { useState } from 'react'
@@ -18,20 +18,17 @@ const StudentLister = () => {
     useEffect(() => {
         const fetchData = () => {
           const patients = [];
-          const databaseRef = ref(database, "Grade Level/");
+          const databaseRef = ref(database, "Grand List/");
           onValue(
             databaseRef,
             (snapshot) => {
-              snapshot.forEach((patientSnapshot) => {
-                const patientData = patientSnapshot.val();
-    
+                const patientData = snapshot.val();
                 Object.keys(patientData).forEach((key) => {
                   const patient = {
                     id: key,
                     ...patientData[key],
                   };
                   patients.push(patient);
-                });
               });
     
               setStudentList([...patients]); // Create a new array with the updated data
@@ -47,29 +44,6 @@ const StudentLister = () => {
   
       
     const columns = [
-        {
-          field: "student_img",
-          headerName: "Profile Image",
-          width: 150,
-          height: 150,
-          renderCell: (params) => (
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Avatar
-                src={params.value}
-                alt="profile"
-                sx={{ height: "50px", width: "50px" }}
-              />
-            </div>
-          ),
-        },
         {
           field: "student_name",
           headerName: "Student's Name",
