@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import Header from '../Components/Header'
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import {get, getDatabase, onValue, ref} from "firebase/database"
-import { BarChart, axisClasses } from '@mui/x-charts'
+import { BarChart, PieChart, axisClasses } from '@mui/x-charts'
 import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
 import { DataGrid } from '@mui/x-data-grid'
@@ -34,13 +34,16 @@ const Dashboard = () => {
     })
     onValue(ref(db, "Strand"),
     (snapshot) =>{
+      let index = 0;
       snapshot.forEach((elemento) =>{
-        strandCounts.push({id: elemento.key, value: elemento.size})
+        strandCounts.push({ value: elemento.size, label: elemento.key})  
+        index++
       })
+      console.log(strandCounts)
       setAllStrands(strandCounts)
     })
 
-  },[db])
+  },[])
 
 
 
@@ -83,8 +86,6 @@ const Dashboard = () => {
 
         fetchAll[option.id] = attendanceData;
       }
-
-      console.log(fetchAll)
       setOneRow(fetchAll);
     };
 
@@ -123,10 +124,9 @@ const Dashboard = () => {
   return (
     <Box m="20px">
          <Header title="DASHBOARD" subtitle="This is where general information are displayed "/>
-       <Box display="flex" justifyContent="space-evenly">
+       <Box display="flex" justifyContent="space-evenly" m="10px">
+           {/*For the Grade Level Chart*/}
         <Box sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px"  }}>
-
-                {/*For the Grade Level Chart*/}
             {allGrades.length > 0 && (
                 <BarChart
                   dataset={allGrades}
@@ -136,6 +136,37 @@ const Dashboard = () => {
                 />
             )}
         </Box>
+
+         {/*For the Strands Chart Chart*/}
+        
+         <Box sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px" }}>
+         <Typography
+          variant='h4'
+          color={'#ffffff'}
+          fontStyle={'italic'}
+          display='flex'
+          justifyContent='center'
+          marginTop='10px'
+          >
+            Number of Students per Strand/Track
+          </Typography>
+            <PieChart
+             series={[
+              {
+                data: [
+                 ...allStrands
+                ],
+                highlightScope: { faded: 'global', highlighted: 'item' },
+                faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+              },
+            ]}
+            width={400}
+            height={250}
+            sx={{marginTop: '20px'}}
+            />
+      
+        </Box>
+ 
        </Box>
        <Box marginTop="20px"  
             display="grid"
