@@ -24,7 +24,6 @@ const Dashboard = () => {
   // A useEffect to get all data from the database
   useEffect(() => {
     const gradeCounts = []
-    const strandCounts = []
     onValue(ref(db, "Grade Level/"),
     (snapshot) => {
       snapshot.forEach((element) =>{
@@ -32,17 +31,32 @@ const Dashboard = () => {
       })
       setAllGrades(gradeCounts)
     })
-    onValue(ref(db, "Strand"),
-    (snapshot) =>{
-      let index = 0;
-      snapshot.forEach((elemento) =>{
-        strandCounts.push({ value: elemento.size, label: elemento.key})  
-        index++
-      })
-      console.log(strandCounts)
-      setAllStrands(strandCounts)
-    })
 
+    onValue(ref(db, `Grand Attendance/${new Date().toDateString()}`),
+    (snapshot) =>{
+      const strandCounts = [];
+      snapshot.forEach((elemento) => {
+        elemento.forEach((element) =>{
+          const strand = element.child("strand").val();
+          if(strand){
+            if(strandCounts[strand]){
+              strandCounts[strand] += 1;
+            }
+            else {
+              strandCounts[strand] = 1;
+            }
+          }
+      });
+      });
+
+      const uniquesArray = [];
+      for (const strands in strandCounts){
+        uniquesArray.push({value: strandCounts[strands], label: strands})
+      }
+      console.log(uniquesArray)
+      setAllStrands(uniquesArray)
+
+    })
   },[])
 
 
@@ -139,33 +153,32 @@ const Dashboard = () => {
 
          {/*For the Strands Chart Chart*/}
         
-         <Box sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px" }}>
-         <Typography
-          variant='h4'
-          color={'#ffffff'}
-          fontStyle={'italic'}
-          display='flex'
-          justifyContent='center'
-          marginTop='10px'
-          >
-            Number of Students per Strand/Track
-          </Typography>
-            <PieChart
-             series={[
-              {
-                data: [
-                 ...allStrands
-                ],
-                highlightScope: { faded: 'global', highlighted: 'item' },
-                faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
-              },
-            ]}
-            width={400}
-            height={250}
-            sx={{marginTop: '20px'}}
-            />
-      
-        </Box>
+         <Box sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px", padding:"10px" }}>
+            <Typography
+              variant='h4'
+              color={'#ffffff'}
+              fontStyle={'italic'}
+              display='flex'
+              justifyContent='center'
+              marginTop='10px'
+              >
+                Number of Students Present per Strand/Track
+              </Typography>
+                  <PieChart
+                  series={[
+                    {
+                      data: [
+                      ...allStrands
+                      ],
+                      highlightScope: { faded: 'global', highlighted: 'item' },
+                      faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+                    },
+                  ]}
+                  width={400}
+                  height={250}
+                  sx={{marginTop: '20px'}}
+                  />
+         </Box>
  
        </Box>
        <Box marginTop="20px"  
@@ -174,46 +187,46 @@ const Dashboard = () => {
             gap="20px"
             justifyContent="space-between">
 
-       {optionList.map((option) => (
-          <Box
-            key={option.id} 
-             marginTop="20px"
-             display="flex"
-             justifyContent="center"
-             alignContent="center"
-             height="68vh"
-             sx={{
-               "& .MuiDataGrid-root": {
-                 border: "none",
-               },
-               "& .MuiDataGrid-cell": {
-                 borderBottom: "none",
-               },
-               "& .name-column--cell": {
-                 color: colors.white[200],
-               },
-               "& .MuiDataGrid-columnHeaders": {
-                 backgroundColor: colors.maroon[700],
-                 borderBottom: "none",
-               },
-               "& .MuiDataGrid-virtualScroller": {
-                 backgroundColor: colors.yellow[700],
-               },
-               "& .MuiDataGrid-footerContainer": {
-                 borderTop: "none",
-                 backgroundColor: colors.maroon[600],
-               },
-               "& .MuiButtonBase-root":{
-                 color: colors.white[200]
-               }
-             }}
-          >
-          
-            <Box >
-              <DataGrid columns={oneColumn} rows={oneRow[option.id] || []} />
-            </Box>
-          </Box>
-          ))}
+            {optionList.map((option) => (
+                <Box
+                  key={option.id} 
+                  marginTop="20px"
+                  display="flex"
+                  justifyContent="center"
+                  alignContent="center"
+                  height="68vh"
+                  sx={{
+                    "& .MuiDataGrid-root": {
+                      border: "none",
+                    },
+                    "& .MuiDataGrid-cell": {
+                      borderBottom: "none",
+                    },
+                    "& .name-column--cell": {
+                      color: colors.white[200],
+                    },
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: colors.maroon[700],
+                      borderBottom: "none",
+                    },
+                    "& .MuiDataGrid-virtualScroller": {
+                      backgroundColor: colors.yellow[700],
+                    },
+                    "& .MuiDataGrid-footerContainer": {
+                      borderTop: "none",
+                      backgroundColor: colors.maroon[600],
+                    },
+                    "& .MuiButtonBase-root":{
+                      color: colors.white[200]
+                    }
+                  }}
+                >
+                
+                  <Box >
+                    <DataGrid columns={oneColumn} rows={oneRow[option.id] || []} />
+                  </Box>
+                </Box>
+                ))}
         </Box>
     </Box>
   )

@@ -52,8 +52,8 @@ const Authentication = ({setUser, setActive}) => {
        <Box display="flex" justifyContent="space-evenly">
             <Box padding="20px" sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px"  }}>
               <Box>
-                  <image src='https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/8081%20(2).png?alt=media&token=398f3c20-a2b2-4025-b269-b5acf4f501d3' 
-                  alt='perps-image'
+                  <img src='https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/8081%20(2).png?alt=media&token=398f3c20-a2b2-4025-b269-b5acf4f501d3' 
+                  alt='perps-imahe'
                   style={{width:"500px"}}/>
                 </Box> 
                <Box marginTop="20px">
