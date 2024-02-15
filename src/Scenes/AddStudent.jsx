@@ -85,7 +85,7 @@ const AddStudent = () => {
           //This is for the grand list
         update(
           ref_database(database, "Grand List/" + values.id_num),
-          {...values, status: "enrolled", grade_level: napilingLevel, strand: napilingBranch }
+          {...values, status: "enrolled", grade_level: napilingLevel, strand: napilingBranch, admission: "Absent" }
         )
       } catch (mali) {
         toast.error("Error uploading data due to: ", mali);

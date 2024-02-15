@@ -32,6 +32,7 @@ const Dashboard = () => {
       setAllGrades(gradeCounts)
     })
 
+
     onValue(ref(db, `Grand Attendance/${new Date().toDateString()}`),
     (snapshot) =>{
       const strandCounts = [];
