@@ -13,6 +13,7 @@ import Diversity3Icon from '@mui/icons-material/Diversity3';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SummarizeOutlined  from "@mui/icons-material/Summarize";
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import Clock from "../Globals/Clock"
 
 const Item = ({ title, to, icon, selected, setSelected, user }) => {
@@ -138,6 +139,15 @@ const Sidebar = ({ user, setActive }) => {
                      title="Modify Categories"
                      to="/modifycategories"
                      icon={<MapsHomeWorkIcon/>}
+                     selected={selected}
+                     setSelected={setSelected}
+                /> 
+            )}
+              { user?.uid && (
+                <Item
+                     title="Add System User"
+                     to="/adduser"
+                     icon={<PersonAddIcon/>}
                      selected={selected}
                      setSelected={setSelected}
                 /> 

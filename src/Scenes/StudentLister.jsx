@@ -2,7 +2,7 @@ import React from 'react'
 import Header from '../Components/Header'
 import { Box } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { getDatabase, onValue, ref } from 'firebase/database'
+import { getDatabase, onValue, ref, update } from 'firebase/database'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { toast } from 'react-toastify'
@@ -13,10 +13,13 @@ const StudentLister = () => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const [studentList, setStudentList] = useState([]);
+    const [attendanceList, setAttendanceList] = useState([]);
+    let matches = []
+    let notMatch = []
     const database = getDatabase();
 
     useEffect(() => {
-        const fetchData = () => {
+        const fetchGrandList = () => {
           const patients = [];
           const databaseRef = ref(database, "Grand List/");
           onValue(
@@ -38,11 +41,58 @@ const StudentLister = () => {
             }
           );
         };
-        fetchData();
-      });
 
-  
+        const fetchCurrentAttendance = () => {
+          const currentAttendance = [];
+          const datesAttend = ref(database, `Grand Attendance/${new Date().toDateString()}`);
+           onValue(
+            datesAttend,
+            (snapshot) => {
+                (snapshot).forEach((snappy) => {
+                  (snappy).forEach((laman) => {
+                    currentAttendance.push(laman.key)
+                  })
+                })
+            }
+           )
+           setAttendanceList(currentAttendance)
+        }
+
+        const callForAdmission = () => {
+          let listahan = studentList.map(laman => laman.id)
+
+          listahan.forEach(content => {
+            if(attendanceList.includes(content)){
+              matches.push(content);
+            }
+            else{
+              notMatch.push(content)
+            }
+            studentList.forEach(objects => {
+              if (matches.includes(objects.id)) {
+                  matches.forEach(element => {
+                    update(ref(database, `Grand List/${element}`), {
+                      admission: "Present"
+                    })
+                  })
+              } else {
+
+                notMatch.forEach(element => {
+                  update(ref(database, `Grand List/${element}`), {
+                    admission: "Absent"
+                  })
+                })
+              }
+          });
+
+          })
+        }
       
+        fetchCurrentAttendance();
+        fetchGrandList();
+        callForAdmission();
+      },);
+
     const columns = [
         {
           field: "student_name",
@@ -57,6 +107,7 @@ const StudentLister = () => {
         { field: "caretaker_num", headerName: "Caretaker's Phone", flex: 1 },
         { field: "admission", headerName: "Current Admission Status", flex: 1,},
       ];
+
     
   return (
     <Box m="20px">
@@ -100,7 +151,7 @@ const StudentLister = () => {
         >
 
         <DataGrid rows={studentList} columns={columns}  slots={{ toolbar: GridToolbar }} getCellClassName={(params) => {
-          if(params.field === 'admission' || params.value === null ) {
+          if(params.field === 'admission' || params.field === null ) {
             return params.value === "Absent" ? 'Absent' : (params.value === "Present" ? "Present" : '')       
           }
         }}/>

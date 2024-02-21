@@ -54,7 +54,7 @@ const Dashboard = () => {
       for (const strands in strandCounts){
         uniquesArray.push({value: strandCounts[strands], label: strands})
       }
-      console.log(uniquesArray)
+
       setAllStrands(uniquesArray)
 
     })

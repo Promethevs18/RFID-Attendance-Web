@@ -137,8 +137,11 @@ const addLevel = (k) => {
       ref(db, "Grade Level/"+ k.gradeLevel),{
         dataMarker: "Node created at: "+ new Date().toDateString()
       }
+      
     )
-    window.location.reload()
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   } catch(mali){
     toast.error("Something went wrong due to:" + mali)
   }
@@ -157,7 +160,9 @@ const addOption = (k) =>{
     set(ref(db, "Strand/" + k.option),{
       dataMarker: "Node created at: " + new Date().toDateString()
     })
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }catch(mali){
     toast.error("Error due to: " + mali)
   }
@@ -243,7 +248,9 @@ const openLevel = () => {
 const deleteLevel = () => {
   try{
     remove(ref(db, "Grade Level/"+ levelArray[0]))
-    window.location.reload()
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }catch (mali) {
     toast.error("Something went wrong: "+ mali)
   }
@@ -254,7 +261,9 @@ const deleteLevel = () => {
 const deleteOption = () => {
   try{
     remove(ref(db, "Strand/" + optionArray[0]))
-    window.location.reload();
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }catch(mali){
     toast.error("Something went wrong: "+ mali)
   }
