@@ -13,23 +13,43 @@ import AddStudent from "./Scenes/AddStudent";
 import StudentLister from "./Scenes/StudentLister";
 import ModifyCategories from "./Scenes/ModifyCategories";
 import AddUser from "./Scenes/AddUser"
+import { getDatabase, onValue, ref } from "firebase/database";
 
 function App() {
   const [theme, colorMode] = useMode();
   const [user, setUser] = useState(null);
   const [active, setActive] = useState("Dashboard");
   const [isSidebar, setIsSidebar] = useState(true);
+  const db = getDatabase()
+  const [allUsers, setAllUsers] = useState([]);
+  const [access, setAccess] = useState('')
 
-  useEffect(() =>{
-    auth.onAuthStateChanged((authUser) =>{
-      if(authUser){
+  useEffect(() => {
+    auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
         setUser(authUser);
-      }
-      else{
+     
+        onValue(ref(db, "System Users/"), (snapshot) => {
+          const users = [];
+          snapshot.forEach((laman) => {
+            laman.forEach((snap) => {
+              users.push(snap.val());
+            });
+          });
+          setAllUsers(users);
+  
+          const emailList = allUsers.map((laman) => laman.email);
+          if (emailList.includes(auth.currentUser.email)) {
+            const index = emailList.indexOf(auth.currentUser.email);
+            setAccess(users[index].accessLevel);
+          }
+        });
+      } else {
         setUser(null);
       }
-    })
-  },[])
+    });
+  }, [db]);
+  
 
 
   return (
@@ -42,12 +62,12 @@ function App() {
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
             <Topbar setIsSidebar={setIsSidebar}/>
             <Routes setUser={user}>
-              <Route path="/" element={<Dashboard setActive={setActive} />}/>
-              <Route path="/authentication" element={<Authentication setActive={setActive} user={user}/>}/>
-              <Route path="/addstudent" element={<AddStudent setActive={setActive}/>}/>
-              <Route path="/modifycategories" element={<ModifyCategories setActive={setActive}/>}/>
-              <Route path="/studentlist" element={<StudentLister setActive={setActive}/>}/>
-              <Route path="/adduser" element={<AddUser setActive={setActive}/>}/> 
+              <Route path="/" element={<Dashboard setActive={setActive} access={access} />}/>
+              <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access}/>}/>
+              <Route path="/addstudent" element={<AddStudent setActive={setActive} access={access}/>}/>
+              <Route path="/modifycategories" element={<ModifyCategories setActive={setActive} access={access}/>}/>
+              <Route path="/studentlist" element={<StudentLister setActive={setActive} access={access}/>}/>
+              <Route path="/adduser" element={<AddUser setActive={setActive} access={access}/>}/> 
             </Routes>
           </main>
         </div>

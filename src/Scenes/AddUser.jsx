@@ -9,8 +9,6 @@ import { toast } from 'react-toastify'
 import { createUserWithEmailAndPassword, getAuth, sendEmailVerification } from 'firebase/auth'
 
 
-
-
 const AddUser = () => {
 
     const initialValues = {
@@ -36,7 +34,7 @@ const AddUser = () => {
     //   sign-in logic
     const signInToSystem = async (values) => {
         try{
-            update(ref(db, `System Users/${value}`),{
+            update(ref(db, `System Users/${value}/${value}`),{
                 email: values.email,
                 accessLevel: value
             }).then(() => {
@@ -46,16 +44,11 @@ const AddUser = () => {
                 })
                })
             })
-    
         }
         catch(error){
             console.log(`Error occured due to ${error.message}`)
         }
-
-        
     }
-
-    console.log(value)
 
   return (
     <Box m="20px">
@@ -110,10 +103,10 @@ const AddUser = () => {
                         {/* Radio Buttons */}
                       <Box marginTop="10px">
                         <FormControl>
-                            <FormLabel>Choose Access Level</FormLabel>
+                            <FormLabel>Subject Handle</FormLabel>
                             <RadioGroup value={value} onChange={buttonHandler}>
-                                <FormControlLabel value="Administrator" control={<Radio/>} label="Administrator"/>
-                                <FormControlLabel value="Supervisor" control={<Radio/>} label="Supervisor"/>
+                                <FormControlLabel value="ICT" control={<Radio/>} label="ICT"/>
+                                <FormControlLabel value="STEM" control={<Radio/>} label="STEM"/>
                             </RadioGroup>
                         </FormControl>
                     </Box>

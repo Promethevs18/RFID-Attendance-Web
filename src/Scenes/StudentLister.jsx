@@ -2,14 +2,14 @@ import React from 'react'
 import Header from '../Components/Header'
 import { Box } from '@mui/material'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { getDatabase, onValue, ref, update } from 'firebase/database'
+import { equalTo, getDatabase, onValue, orderByChild, query, ref, update } from 'firebase/database'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
 
-const StudentLister = () => {
+const StudentLister = ({access}) => {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const [studentList, setStudentList] = useState([]);
@@ -22,8 +22,9 @@ const StudentLister = () => {
         const fetchGrandList = () => {
           const patients = [];
           const databaseRef = ref(database, "Grand List/");
+          const filtered = query(databaseRef, orderByChild("strand"), equalTo(access))
           onValue(
-            databaseRef,
+            filtered,
             (snapshot) => {
                 const patientData = snapshot.val();
                 Object.keys(patientData).forEach((key) => {

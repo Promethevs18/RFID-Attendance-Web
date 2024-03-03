@@ -7,7 +7,7 @@ import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
 import { DataGrid } from '@mui/x-data-grid'
 
-const Dashboard = () => {
+const Dashboard = ({access}) => {
 
   const [allGrades, setAllGrades] = useState([]);
   const [allStrands, setAllStrands] = useState([])
@@ -20,6 +20,8 @@ const Dashboard = () => {
 
   const tema = useTheme();
   const colors = tokens(tema.palette.mode);
+
+  console.log(access)
 
   // A useEffect to get all data from the database
   useEffect(() => {
@@ -58,7 +60,7 @@ const Dashboard = () => {
       setAllStrands(uniquesArray)
 
     })
-  },[])
+  },[db])
 
 
 

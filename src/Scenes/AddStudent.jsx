@@ -6,9 +6,12 @@ import { Form, Formik } from "formik";
 import { toast } from "react-toastify";
 import {
   child,
+  equalTo,
   get,
   getDatabase,
   onValue,
+  orderByChild,
+  query,
   ref,
   ref as ref_database,
   remove,
@@ -19,14 +22,14 @@ import { useTheme } from "@emotion/react";
 import { tokens } from "../theme";
 
 
-const AddStudent = () => {
+const AddStudent = ({access}) => {
   //global properties
   const database = getDatabase();
   const [napilingLevel, setNapilingLevel] = useState("");
   const [mgaLevel, setMgaLevel] = useState([])
   
   const [napilingBranch, setNapilingBranch] = useState("")
-  const [mgaBranch, setBranch] = useState([])
+  
 
   const [hideAdd, setHideAdd] = useState(true)
 
@@ -110,10 +113,12 @@ const AddStudent = () => {
     const kuhanin = () => {
       const listahan = [];
       const getList = ref(database, "Grand List/");
+      const filtered = query(getList, orderByChild('strand'), equalTo(access))
       onValue(
-        getList,
+        filtered,
         (snapshot) => {
           const nakuha = snapshot.val();
+          console.log(nakuha)
           Object.keys(nakuha).forEach((val) => {
             const kuhain = {
               id: val,
@@ -126,7 +131,7 @@ const AddStudent = () => {
       );
     };
     kuhanin();
-  }, [database]);
+  }, [database, access]);
 
   //Datagrid table columns and codes
 
@@ -290,24 +295,6 @@ const AddStudent = () => {
   }
 
   //FOR THE STUDENT STRAND
-
-  useEffect(() => {
-    const branches = []
-    const getNow = () => {
-    const kuninBranches = ref(database, "Strand/")
-    onValue(kuninBranches, (snapshot) => {
-      snapshot.forEach((value) => {
-        const taken = {
-          id: value.key
-        }
-        branches.push(taken)
-      })
-      setBranch(branches)
-    })
-  }
-  getNow();
-  })
-
   const handleChanger = (nyare) => {
     setNapilingBranch(nyare.target.value)
   }
@@ -360,13 +347,9 @@ const AddStudent = () => {
                       onChange={handleChanger}
                       value={napilingBranch}
                       >
-                        {mgaBranch.map((option) => (
-                          <MenuItem 
-                          key={option.id} value={option.id}>
-                            {option.id}
+                          <MenuItem value={access}>
+                            {access}
                           </MenuItem>
-                        ))}
-                        
                       </Select>
                     </FormControl>
                   </Box>
