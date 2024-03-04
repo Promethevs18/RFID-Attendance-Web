@@ -21,7 +21,6 @@ const Dashboard = ({access}) => {
   const tema = useTheme();
   const colors = tokens(tema.palette.mode);
 
-  console.log(access)
 
   // A useEffect to get all data from the database
   useEffect(() => {
@@ -34,7 +33,7 @@ const Dashboard = ({access}) => {
       setAllGrades(gradeCounts)
     })
 
-
+console.log(access)
     onValue(ref(db, `Grand Attendance/${new Date().toDateString()}`),
     (snapshot) =>{
       const strandCounts = [];
@@ -61,7 +60,6 @@ const Dashboard = ({access}) => {
 
     })
   },[db])
-
 
 
   //this code is for the student table 

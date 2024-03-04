@@ -27,8 +27,7 @@ function App() {
   useEffect(() => {
     auth.onAuthStateChanged((authUser) => {
       if (authUser) {
-        setUser(authUser);
-     
+        
         onValue(ref(db, "System Users/"), (snapshot) => {
           const users = [];
           snapshot.forEach((laman) => {
@@ -40,17 +39,34 @@ function App() {
   
           const emailList = allUsers.map((laman) => laman.email);
           if (emailList.includes(auth.currentUser.email)) {
+      
             const index = emailList.indexOf(auth.currentUser.email);
             setAccess(users[index].accessLevel);
           }
+          setUser(authUser);
         });
       } else {
         setUser(null);
+        setAccess("Unauthorized")
       }
     });
-  }, [db]);
+  },[db]);
   
-
+  useEffect(() => {
+    // Update access whenever allUsers changes
+    auth.onAuthStateChanged((userNow) => {
+      if(userNow){
+        const emailList = allUsers.map((laman) => laman.email);
+        if (emailList.includes(auth.currentUser.email)) {
+          const index = emailList.indexOf(auth.currentUser.email);
+          setAccess(allUsers[index].accessLevel);
+        }
+      }
+      else{
+        setUser(null)
+      }
+    })
+  }, [allUsers]);
 
   return (
     <ColorModeContext.Provider value={colorMode}>
@@ -61,7 +77,7 @@ function App() {
           <main className="content">
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
             <Topbar setIsSidebar={setIsSidebar}/>
-            <Routes setUser={user}>
+            <Routes>
               <Route path="/" element={<Dashboard setActive={setActive} access={access} />}/>
               <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access}/>}/>
               <Route path="/addstudent" element={<AddStudent setActive={setActive} access={access}/>}/>

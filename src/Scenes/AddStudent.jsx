@@ -118,7 +118,6 @@ const AddStudent = ({access}) => {
         filtered,
         (snapshot) => {
           const nakuha = snapshot.val();
-          console.log(nakuha)
           Object.keys(nakuha).forEach((val) => {
             const kuhain = {
               id: val,
