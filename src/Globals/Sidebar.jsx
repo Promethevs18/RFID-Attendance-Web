@@ -1,19 +1,20 @@
 import { useState, React } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import "react-pro-sidebar/dist/css/styles.css";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
 import { tokens } from "../theme";
-import HomeOutlined from "@mui/icons-material/HomeOutlined";
-import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import HomeOutlined from "@mui/icons-material/Home";
 import { toast } from "react-toastify";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebase";
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import LogoutIcon from '@mui/icons-material/Logout';
+import LogIn from '@mui/icons-material/Login';
 import SummarizeOutlined  from "@mui/icons-material/Summarize";
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import Clock from "../Globals/Clock"
 
 
@@ -42,13 +43,11 @@ const Item = ({ title, to, icon, selected, setSelected, user }) => {
   );
 };
 
-const Sidebar = ({ user, setActive }) => {
+const Sidebar = ({ user }) => {
   const theme = useTheme();
   const kulay = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState("Dashboard");
-
-
 
   return (
     <Box
@@ -72,33 +71,11 @@ const Sidebar = ({ user, setActive }) => {
     >
       <ProSidebar collapsed={isCollapsed} >
         <Menu iconShape="square">
-          {/* LOGO AND MENU ICON */}
-          <MenuItem
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
-            style={{
-              margin: "10px 0 20px 0",
-              color: kulay.goldish[100],
-            }}
-          >
-            {!isCollapsed && (
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                ml="15px"
-              >
-                <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
-                  <MenuOutlinedIcon />
-                </IconButton>
-              </Box>
-            )}
-          </MenuItem>
           {/* USER */}
           {!isCollapsed && (
             <Box mb="25px">
               <Box display="flex" justifyContent="center" alignItems="center">
-                <Clock datediff={0  }/>
+                <Clock datediff={0}/>
               </Box>
               <Box textAlign="center">
                 { user?.uid && (
@@ -119,7 +96,16 @@ const Sidebar = ({ user, setActive }) => {
           )}
 
           {/* Menu Items */}
-          <Box paddingLeft={!isCollapsed ? undefined : "10%"} >
+          <Box paddingLeft={!isCollapsed ? undefined : "10%"} mt="75px" >
+              <a href="https://www.facebook.com/perpetualmolino/">
+              <img
+                alt="Perpetual Logo"
+                width="35px"
+                height="45px"
+                src="https://firebasestorage.googleapis.com/v0/b/protoperp-attendance-monitor.appspot.com/o/university-icon-removebg-preview.png?alt=media&token=a0718810-f2b7-43f8-9ad6-a44caf59b95a"
+                style={{ borderRadius: "40%", marginLeft: "20px", mb:"10px" }}
+                />
+            </a>
             <Item
               title="Dashboard"
               to="/"
@@ -154,6 +140,15 @@ const Sidebar = ({ user, setActive }) => {
                      setSelected={setSelected}
                 /> 
             )}
+             { user?.uid && (
+                <Item
+                     title="Add Schedule"
+                     to="/addschedule"
+                     icon={<CalendarMonthIcon/>}
+                     selected={selected}
+                     setSelected={setSelected}
+                /> 
+            )}
             {user?.uid &&(
                <Item
                  title="Student Manifest"
@@ -176,7 +171,7 @@ const Sidebar = ({ user, setActive }) => {
               <Item
                 title="Log in to the system"
                 to="/authentication"
-                icon={<LogoutIcon/>}
+                icon={<LogIn/>}
                 selected={selected}
                 setSelected={setSelected}
             /> 

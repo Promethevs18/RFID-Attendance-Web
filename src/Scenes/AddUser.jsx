@@ -6,14 +6,15 @@ import { Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Te
 import * as yup from 'yup'
 import { getDatabase, ref, update } from 'firebase/database'
 import { toast } from 'react-toastify'
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification } from 'firebase/auth'
+import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile } from 'firebase/auth'
 
 
 const AddUser = () => {
 
     const initialValues = {
         email: "",
-        password: ""
+        password: "",
+        userName: ""
     }
     const db = getDatabase();
     const auth = getAuth();
@@ -27,28 +28,43 @@ const AddUser = () => {
     // change schema for the textboxes
     const userSchema = yup.object().shape({ 
         email: yup.string().required("This field is required"),
-        password: yup.string().required("This field is required")
+        password: yup.string().required("This field is required"),
+        userName: yup.string().required("This field is required")
       })
     
 
     //   sign-in logic
     const signInToSystem = async (values) => {
-        try{
-            update(ref(db, `System Users/${value}/${value}`),{
-                email: values.email,
-                accessLevel: value
-            }).then(() => {
-               createUserWithEmailAndPassword(auth,values.email, values.password).then(() => {
-                sendEmailVerification(auth.currentUser).then(() => {
-                    toast.success("User is now added. Check email for verification before logging in")
-                })
-               })
-            })
-        }
-        catch(error){
-            console.log(`Error occured due to ${error.message}`)
-        }
-    }
+      try {
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          values.email,
+          values.password
+        );
+    
+        // Update the newly created user's display name
+        await updateProfile(userCredential.user, {
+          displayName: values.userName,
+        });
+    
+        // Update additional user information in the database
+        await update(ref(db, `System Users/${value}/${value}`), {
+          email: values.email,
+          accessLevel: value, 
+        });
+    
+        // Send email verification
+        await sendEmailVerification(userCredential.user);
+    
+        toast.success(
+          "User is now added. Check email for verification before logging in"
+        );
+      } catch (error) {
+        console.error("Error signing in to system:", error);
+        toast.error("Error signing in to system. Please try again.");
+      }
+    };
+    
 
   return (
     <Box m="20px">
@@ -69,6 +85,21 @@ const AddUser = () => {
                 >
                   {({values, errors, touched, handleChange, handleBlur}) =>(
                     <Form>
+                      <Box>
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            type="text"
+                            label="User Name"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            value={values.userName}
+                            name="userName"
+                            error={!!touched.userName && !!errors.userName}
+                            helperText={touched.userName && errors.userName}
+                            sx={{ gridColumn: "span 2", marginTop:"20px", marginBottom: "20px" }}
+                          />
+                      </Box>
                       <Box display="flex" alignContent="center"
                       >
                         <TextField
@@ -103,7 +134,7 @@ const AddUser = () => {
                         {/* Radio Buttons */}
                       <Box marginTop="10px">
                         <FormControl>
-                            <FormLabel>Subject Handle</FormLabel>
+                            <FormLabel>Level Handle</FormLabel>
                             <RadioGroup value={value} onChange={buttonHandler}>
                                 <FormControlLabel value="ICT" control={<Radio/>} label="ICT"/>
                                 <FormControlLabel value="STEM" control={<Radio/>} label="STEM"/>

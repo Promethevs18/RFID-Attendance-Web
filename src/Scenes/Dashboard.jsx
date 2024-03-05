@@ -7,7 +7,7 @@ import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
 import { DataGrid } from '@mui/x-data-grid'
 
-const Dashboard = ({access}) => {
+const Dashboard = () => {
 
   const [allGrades, setAllGrades] = useState([]);
   const [allStrands, setAllStrands] = useState([])
@@ -33,7 +33,9 @@ const Dashboard = ({access}) => {
       setAllGrades(gradeCounts)
     })
 
-console.log(access)
+    
+
+
     onValue(ref(db, `Grand Attendance/${new Date().toDateString()}`),
     (snapshot) =>{
       const strandCounts = [];
@@ -60,7 +62,6 @@ console.log(access)
 
     })
   },[db])
-
 
   //this code is for the student table 
   useEffect(()=> {
@@ -153,7 +154,7 @@ console.log(access)
         </Box>
 
          {/*For the Strands Chart Chart*/}
-        
+         {allStrands.length > 0 && (
          <Box sx={{backgroundColor: "rgba(112,37,51, 0.3)", borderRadius:"20px", padding:"10px" }}>
             <Typography
               variant='h4'
@@ -180,7 +181,7 @@ console.log(access)
                   sx={{marginTop: '20px'}}
                   />
          </Box>
- 
+         )}
        </Box>
        <Box marginTop="20px"  
             display="grid"

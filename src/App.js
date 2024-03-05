@@ -14,6 +14,7 @@ import StudentLister from "./Scenes/StudentLister";
 import ModifyCategories from "./Scenes/ModifyCategories";
 import AddUser from "./Scenes/AddUser"
 import { getDatabase, onValue, ref } from "firebase/database";
+import AddSched from "./Scenes/AddSched";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -23,6 +24,8 @@ function App() {
   const db = getDatabase()
   const [allUsers, setAllUsers] = useState([]);
   const [access, setAccess] = useState('')
+  const [userName, setUserName] = useState('')
+
 
   useEffect(() => {
     auth.onAuthStateChanged((authUser) => {
@@ -36,22 +39,22 @@ function App() {
             });
           });
           setAllUsers(users);
-  
           const emailList = allUsers.map((laman) => laman.email);
           if (emailList.includes(auth.currentUser.email)) {
-      
             const index = emailList.indexOf(auth.currentUser.email);
             setAccess(users[index].accessLevel);
           }
+          setUserName(authUser.displayName)
           setUser(authUser);
         });
       } else {
         setUser(null);
         setAccess("Unauthorized")
+        setUserName('')
       }
     });
   },[db]);
-  
+
   useEffect(() => {
     // Update access whenever allUsers changes
     auth.onAuthStateChanged((userNow) => {
@@ -61,6 +64,7 @@ function App() {
           const index = emailList.indexOf(auth.currentUser.email);
           setAccess(allUsers[index].accessLevel);
         }
+        setUserName(userNow.displayName)
       }
       else{
         setUser(null)
@@ -76,14 +80,15 @@ function App() {
           <Sidebar setActive={setActive} active={active} user={user} isSidebar={isSidebar}/>
           <main className="content">
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
-            <Topbar setIsSidebar={setIsSidebar}/>
+            <Topbar setIsSidebar={setIsSidebar} userName={userName}/>
             <Routes>
-              <Route path="/" element={<Dashboard setActive={setActive} access={access} />}/>
-              <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access}/>}/>
+              <Route path="/" element={<Dashboard setActive={setActive} access={access}  />}/>
+              <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access} />}/>
               <Route path="/addstudent" element={<AddStudent setActive={setActive} access={access}/>}/>
-              <Route path="/modifycategories" element={<ModifyCategories setActive={setActive} access={access}/>}/>
+              <Route path="/modifycategories" element={<ModifyCategories setActive={setActive} access={access} />}/>
               <Route path="/studentlist" element={<StudentLister setActive={setActive} access={access}/>}/>
-              <Route path="/adduser" element={<AddUser setActive={setActive} access={access}/>}/> 
+              <Route path="/adduser" element={<AddUser setActive={setActive} access={access} />}/> 
+              <Route path="/addschedule" element={<AddSched access={access}/>} />
             </Routes>
           </main>
         </div>
