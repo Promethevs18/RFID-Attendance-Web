@@ -43,11 +43,12 @@ const Item = ({ title, to, icon, selected, setSelected, user }) => {
   );
 };
 
-const Sidebar = ({ user }) => {
+const Sidebar = ({ user, access }) => {
   const theme = useTheme();
   const kulay = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState("Dashboard");
+
 
   return (
     <Box
@@ -106,14 +107,14 @@ const Sidebar = ({ user }) => {
                 style={{ borderRadius: "40%", marginLeft: "20px", mb:"10px" }}
                 />
             </a>
-            <Item
-              title="Dashboard"
-              to="/"
-              icon={<HomeOutlined />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-            { user?.uid && (
+                <Item
+                  title="Dashboard"
+                  to="/"
+                  icon={<HomeOutlined />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+            { access !== "Administrator" && (
                 <Item
                      title="Add Student"
                      to="/addstudent"
@@ -131,7 +132,7 @@ const Sidebar = ({ user }) => {
                      setSelected={setSelected}
                 /> 
             )}
-              { user?.uid && (
+              { access === "Administrator" && (
                 <Item
                      title="Add System User"
                      to="/adduser"
@@ -140,7 +141,7 @@ const Sidebar = ({ user }) => {
                      setSelected={setSelected}
                 /> 
             )}
-             { user?.uid && (
+             { access === "Administrator" && (
                 <Item
                      title="Add Schedule"
                      to="/addschedule"
@@ -149,7 +150,7 @@ const Sidebar = ({ user }) => {
                      setSelected={setSelected}
                 /> 
             )}
-            {user?.uid &&(
+            {access !== "Administrator" &&(
                <Item
                  title="Student Manifest"
                  to="/studentlist"

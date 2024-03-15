@@ -77,7 +77,7 @@ function App() {
       <ThemeProvider theme={theme}>
         <CssBaseline/>
         <div className="app">
-          <Sidebar setActive={setActive} active={active} user={user} isSidebar={isSidebar}/>
+          <Sidebar setActive={setActive} active={active} user={user} isSidebar={isSidebar} access={access} />
           <main className="content">
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
             <Topbar setIsSidebar={setIsSidebar} userName={userName}/>

@@ -6,7 +6,7 @@ import { Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Te
 import * as yup from 'yup'
 import { getDatabase, ref, update } from 'firebase/database'
 import { toast } from 'react-toastify'
-import { createUserWithEmailAndPassword, getAuth, sendEmailVerification, updateProfile } from 'firebase/auth'
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, updateProfile } from 'firebase/auth'
 
 
 const AddUser = () => {
@@ -36,28 +36,30 @@ const AddUser = () => {
     //   sign-in logic
     const signInToSystem = async (values) => {
       try {
-        const userCredential = await createUserWithEmailAndPassword(
+         await createUserWithEmailAndPassword(
           auth,
           values.email,
           values.password
-        );
-    
-        // Update the newly created user's display name
-        await updateProfile(userCredential.user, {
-          displayName: values.userName,
+        ).then((user) => {
+            // Update the newly created user's display name
+            updateProfile(user.user, {
+            displayName: values.userName,
+          }).then(() => {
+          // Update additional user information in the database
+          update(ref(db, `System Users/${value}/${values.userName}`), {
+            email: values.email,
+            userName: values.userName,
+            accessLevel: value, 
+          }).then((user) => {
+            signInWithEmailAndPassword(auth, "admin@attendance.system", "admin123")
+          }).catch((error) => {
+            toast.error(`Error occured due to ` + error)
+          });
+          });
         });
-    
-        // Update additional user information in the database
-        await update(ref(db, `System Users/${value}/${value}`), {
-          email: values.email,
-          accessLevel: value, 
-        });
-    
-        // Send email verification
-        await sendEmailVerification(userCredential.user);
     
         toast.success(
-          "User is now added. Check email for verification before logging in"
+          "User is now added"
         );
       } catch (error) {
         console.error("Error signing in to system:", error);
