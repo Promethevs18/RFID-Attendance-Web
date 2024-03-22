@@ -15,6 +15,7 @@ import SummarizeOutlined  from "@mui/icons-material/Summarize";
 import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import Clock from "../Globals/Clock"
 
 
@@ -48,7 +49,6 @@ const Sidebar = ({ user, access }) => {
   const kulay = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [selected, setSelected] = useState("Dashboard");
-
 
   return (
     <Box
@@ -114,7 +114,7 @@ const Sidebar = ({ user, access }) => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-            { access !== "Administrator" && (
+            { (access !== "Administrator" && access !== "Unauthorized") && (
                 <Item
                      title="Add Student"
                      to="/addstudent"
@@ -123,7 +123,7 @@ const Sidebar = ({ user, access }) => {
                      setSelected={setSelected}
                 /> 
             )}
-             { user?.uid && (
+             {(access !== "Administrator" && access !== "Unauthorized")&& (
                 <Item
                      title="Modify Categories"
                      to="/modifycategories"
@@ -150,7 +150,16 @@ const Sidebar = ({ user, access }) => {
                      setSelected={setSelected}
                 /> 
             )}
-            {access !== "Administrator" &&(
+             { (access !== "Unauthorized") && (
+                <Item
+                     title="Recall Attendance"
+                     to="/recall"
+                     icon={<ReceiptLongIcon/>}
+                     selected={selected}
+                     setSelected={setSelected}
+                /> 
+            )}
+            { (access !== "Administrator" && access !== "Unauthorized") && (
                <Item
                  title="Student Manifest"
                  to="/studentlist"

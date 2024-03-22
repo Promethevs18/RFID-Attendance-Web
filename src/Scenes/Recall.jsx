@@ -1,0 +1,94 @@
+import { Box } from '@mui/system'
+import React, { useState } from 'react'
+import Header from '../Components/Header'
+import {  DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { tokens } from '../theme'
+import { useTheme } from '@emotion/react'
+
+const Recall = ({access}) => {
+
+    //for the colors
+    const colors = tokens(useTheme().palette.mode)  
+
+    //For the datePicker
+    const [chosenDate, setChosenDate] = useState('')
+
+    //for the DataGrid
+    const [allAttendance, setAllAttendance] = useState([])
+
+    const attendanceColumn = [
+        {field: "id_num", headerName: "ID Number", flex: 1},
+        {field: "student_name", headerName: "Student Name", flex: 1},
+        {field: "grade_level", headerName: "Grade Level", flex: 1},
+        {field: "strand", headerName: "Strand", flex: 1},
+        {field: "timeIn", headerName: "Timed In", flex: 1},
+        {field: "timeOut", headerName: "Timed Out", flex: 1},
+    ]
+
+
+  return (
+    <Box m="20px">
+        <Header title="ATTENDANCE RECALL" subtitle="This section allows you to recall the attendance for a specific date. Just select the date on the picker, and you're done"/>
+        <Box m="10px">
+            <Box display="flex" justifyContent="center" m="10px">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                        label='Choose a date'
+                        value={chosenDate}
+                        onChange={(date) => setChosenDate(new Date(date).toDateString())}
+                        />
+                </LocalizationProvider>
+            </Box>
+
+            {access === "Administrator" && (
+                <Box display="flex" justifyContent="center" m="10px">
+                            Hello
+                </Box>
+            )}
+
+            <Box 
+            display="flex"
+            height="65vh"
+      
+            justifyContent="center"
+            sx={{
+              "& .MuiDataGrid-root": {
+                border: "none",
+              },
+              "& .MuiDataGrid-cell": {
+                borderBottom: "none",
+              },
+              "& .name-column--cell": {
+                color: colors.white[200],
+              },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: colors.maroon[700],
+                borderBottom: "none",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                backgroundColor: colors.yellow[700],
+              },
+              "& .MuiDataGrid-footerContainer": {
+                borderTop: "none",
+                backgroundColor: colors.maroon[600],
+              },
+              "& .MuiButtonBase-root":{
+                color: colors.white[200]
+              }
+            }}
+            >
+            <DataGrid
+              columns={attendanceColumn}
+              rows={allAttendance}
+              slots={{toolbar: GridToolbar}}
+              />
+          
+            </Box>
+        </Box>
+    </Box>
+  )
+}
+
+export default Recall

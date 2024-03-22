@@ -13,6 +13,7 @@ import AddStudent from "./Scenes/AddStudent";
 import StudentLister from "./Scenes/StudentLister";
 import ModifyCategories from "./Scenes/ModifyCategories";
 import AddUser from "./Scenes/AddUser"
+import Recall from "./Scenes/Recall";
 import { getDatabase, onValue, ref } from "firebase/database";
 import AddSched from "./Scenes/AddSched";
 
@@ -26,11 +27,10 @@ function App() {
   const [access, setAccess] = useState('')
   const [userName, setUserName] = useState('')
 
-
+  //authentication checker
   useEffect(() => {
     auth.onAuthStateChanged((authUser) => {
       if (authUser) {
-        
         onValue(ref(db, "System Users/"), (snapshot) => {
           const users = [];
           snapshot.forEach((laman) => {
@@ -55,6 +55,7 @@ function App() {
     });
   },[db]);
 
+  //updating user status
   useEffect(() => {
     // Update access whenever allUsers changes
     auth.onAuthStateChanged((userNow) => {
@@ -80,7 +81,7 @@ function App() {
           <Sidebar setActive={setActive} active={active} user={user} isSidebar={isSidebar} access={access} />
           <main className="content">
             <ToastContainer position="top-center" theme="colored" autoClose={3000}/>
-            <Topbar setIsSidebar={setIsSidebar} userName={userName}/>
+            <Topbar setIsSidebar={setIsSidebar} userName={userName} access={access}/>
             <Routes>
               <Route path="/" element={<Dashboard setActive={setActive} access={access}  />}/>
               <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access} />}/>
@@ -88,6 +89,7 @@ function App() {
               <Route path="/modifycategories" element={<ModifyCategories setActive={setActive} access={access} />}/>
               <Route path="/studentlist" element={<StudentLister setActive={setActive} access={access}/>}/>
               <Route path="/adduser" element={<AddUser setActive={setActive} access={access} />}/> 
+              <Route path="/recall" element={<Recall access={access}/>}/>
               <Route path="/addschedule" element={<AddSched access={access}/>} />
             </Routes>
           </main>

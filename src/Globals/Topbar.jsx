@@ -5,20 +5,21 @@ import LightModeOutlined from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlined from "@mui/icons-material/DarkModeOutlined";
 
 
-const Topbar = ({userName}) => {
+const Topbar = ({userName, access}) => {
   const theme = useTheme();
   const colorMode = useContext(ColorModeContext);
   const[name, setName] = useState("");
 
   useEffect(() => {
-    if(userName && userName.length > 0){
+    if(userName && userName !== null){
       setName(userName)
     }
     else{
-      setName("Administrator")
+      setName(access)
     }
-  }, [userName])
+  }, [access, userName])
  
+  console.log(access)
 
   return (
     <Box display="flex" justifyContent="space-between" p={2}>
@@ -30,7 +31,7 @@ const Topbar = ({userName}) => {
             <LightModeOutlined />
           )}
         </IconButton>
-
+        { access !== 'Unauthorized' && (
           <Typography
           variant="h4"
           color={tokens(theme.palette.mode).white}
@@ -38,8 +39,7 @@ const Topbar = ({userName}) => {
           fontStyle="italic"
           sx={{ml: "20px"}}
           >Welcome {name}</Typography>
-      
-  
+          )}
         </Box>
     </Box>
   );

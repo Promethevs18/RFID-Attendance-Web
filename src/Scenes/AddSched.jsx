@@ -3,14 +3,15 @@ import React, { useEffect, useRef, useState } from 'react'
 import Header from '../Components/Header'
 import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { Form, Formik } from 'formik'
 import * as yup from 'yup'
-import { FormControl, InputLabel, Select, MenuItem, TextField } from '@mui/material'
-import { equalTo, getDatabase, onValue, orderByChild, orderByKey, query, ref } from 'firebase/database'
+import { FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material'
+import { equalTo, getDatabase, onValue, orderByChild, orderByKey, query, ref, update } from 'firebase/database'
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from 'dayjs'
+import { toast } from 'react-toastify'
 
 
 const AddSched = () => {
@@ -22,11 +23,35 @@ const AddSched = () => {
   //Start of Datagrid Codes
     //for the columns
     const columns = [
-      {field: "strand", headerName: "Strand", flex: 1}
+      {field: "subject", headerName: "Subject", flex: 1},
+      {field: "strandAssigned", headerName: "Strand", flex: 1},
+      {field: "teacherAssigned", headerName: "Teacher Assigned", flex: 1},
+      {field: "timeStart", headerName: "Period Start", flex: 1},
+      {field: "endTime", headerName: "Period End", flex: 1},
     ]
 
     //for the rows where the data is taken from Firebase
     const [schedules, setSchedule] = useState([]);
+
+    //for getting the data from the database
+    useEffect(() => {
+      const getSubjects = () => {
+        const subjects = []
+        const subRef = ref(db, "Subject Schedules/");
+        onValue(subRef, (snapshot) => {
+          const subData = snapshot.val();
+            Object.keys(subData).forEach((laman) => {
+              const subs = {
+                id: laman,
+                ...subData[laman]
+              }
+              subjects.push(subs)
+            });
+        });
+        setSchedule([...subjects])
+      }
+      getSubjects();
+    })
   //End of Datagrid codes
 
 
@@ -92,19 +117,40 @@ const AddSched = () => {
         
           }
 
+          //change handler for the teacher drop down
           const teacherChange = (bago) => {
            setSelectedTeacher(bago.target.value)
          
           }
-      
-          console.log(selectedTeacher)
         
       //For the time picker
       const [startOras, setStartOras] = useState(dayjs(new Date()))
       const [endOras, setEndOras] = useState(dayjs(new Date()))
 
-
   //End of Form Codes
+
+
+  //Form Submission Code
+
+  const uploadData = async (values) => {
+    try{
+      await update(ref(db, `Subject Schedules/${values.subject}`),
+      {
+        ...values,
+        timeStart: startOras,
+        endTime: endOras,
+        strandAssigned: selectedStrand,
+        teacherAssigned: selectedTeacher
+
+      }
+      );
+      toast.success("Data uploaded successfully")
+    }
+    catch (error){
+      toast.error(`Error occured due to ${error}`)
+    }
+  }
+
 
   return (
     <Box m="20px">
@@ -117,6 +163,7 @@ const AddSched = () => {
               innerRef={formikRef}
               initialValues={initialValues}
               validationSchema={validate}
+              onSubmit={uploadData}
               >
                 {({values, errors, touched, handleBlur, handleChange}) => (
                   <Form>
@@ -187,6 +234,12 @@ const AddSched = () => {
                             </Select>
                         </FormControl>
                       </Box>
+
+                      <Box display="flex" justifyContent="center">
+                        <Button variant='contained' onClick={() => uploadData(values)}>
+                          Upload
+                        </Button>
+                      </Box>
                       
                 </Form>
                 )}
@@ -227,6 +280,7 @@ const AddSched = () => {
             <DataGrid
               columns={columns}
               rows={schedules}
+              slots={{toolbar: GridToolbar}}
               />
           
           </Box>
