@@ -50,7 +50,7 @@ const AddUser = () => {
             email: values.email,
             userName: values.userName,
             accessLevel: value, 
-          }).then((user) => {
+          }).then(() => {
             signInWithEmailAndPassword(auth, "admin@attendance.system", "admin123")
           }).catch((error) => {
             toast.error(`Error occured due to ` + error)

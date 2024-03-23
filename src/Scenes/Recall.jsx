@@ -1,23 +1,75 @@
 import { Box } from '@mui/system'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '../Components/Header'
 import {  DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { tokens } from '../theme'
 import { useTheme } from '@emotion/react'
+import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material'
+import { getDatabase, onValue, ref } from 'firebase/database'
 
 const Recall = ({access}) => {
 
     //for the colors
-    const colors = tokens(useTheme().palette.mode)  
+    const colors = tokens(useTheme().palette.mode) 
+    //for the database reference
+    const db = getDatabase(); 
 
     //For the datePicker
     const [chosenDate, setChosenDate] = useState('')
 
+    //for the GradeLevel
+    const [chosenLevel, setChosenLevel] = useState('');
+    const [allLevels, setAllLevels] = useState([]);
+    useEffect(() => {
+      const takenLevels = [];
+      const getLevels = () => {
+        const getter = ref(db, "Grade Level");
+        onValue(getter, (snapshot) => {
+          snapshot.forEach((laman) =>{
+            const filter = {
+              id: laman.key
+            }
+            takenLevels.push(filter)
+          })
+        })
+        setAllLevels(takenLevels)
+      }
+      getLevels();
+     
+    }, [db])
+    const handlerChange = (event) => {
+       setChosenLevel(event.target.value)
+    }
+
+    //for the Strands
+    const [chosenStrand, setChosenStrand] = useState('');
+    const [allStrands, setAllStrands] = useState([]);
+    useEffect(() => {
+      const getStrands = []
+      if(access === 'Administrator'){
+        const getNow = () => {
+            const getter = ref(db, "Strand");
+            onValue(getter, (snappy) => {
+              snappy.forEach((laman) => {
+                getStrands.push(laman.key)
+              })
+            })
+        }
+        setAllStrands(getStrands)
+        getNow();
+      }
+      else {
+        setAllStrands(access)
+      }
+    }, [db,access])
+    const strandChanger = (event) => {
+      setChosenStrand(event.target.value)
+    }
+
     //for the DataGrid
     const [allAttendance, setAllAttendance] = useState([])
-
     const attendanceColumn = [
         {field: "id_num", headerName: "ID Number", flex: 1},
         {field: "student_name", headerName: "Student Name", flex: 1},
@@ -26,7 +78,6 @@ const Recall = ({access}) => {
         {field: "timeIn", headerName: "Timed In", flex: 1},
         {field: "timeOut", headerName: "Timed Out", flex: 1},
     ]
-
 
   return (
     <Box m="20px">
@@ -42,16 +93,32 @@ const Recall = ({access}) => {
                 </LocalizationProvider>
             </Box>
 
-            {access === "Administrator" && (
                 <Box display="flex" justifyContent="center" m="10px">
-                            Hello
+                    <FormControl sx={{margin : '20px'}}>
+                      <FormLabel>Select a Grade Level</FormLabel>
+                      <RadioGroup value={chosenLevel} onChange={handlerChange} >
+                          {allLevels.map((item) => (
+                            <FormControlLabel key={item.id} value={item.id} control={<Radio/>} label={item.id}/>
+                          ))}
+                      </RadioGroup>
+                    </FormControl>
+
+                    {access === 'Administrator' && (
+                      <FormControl sx={{margin : '20px'}}>
+                      <FormLabel>Select a Strand</FormLabel>
+                      <RadioGroup value={chosenStrand} onChange={strandChanger} >
+                          {allStrands.map((item) => (
+                            <FormControlLabel key={item} value={item} control={<Radio/>} label={item}/>
+                          ))}
+                      </RadioGroup>
+                      </FormControl>
+
+                    )}
                 </Box>
-            )}
 
             <Box 
             display="flex"
             height="65vh"
-      
             justifyContent="center"
             sx={{
               "& .MuiDataGrid-root": {

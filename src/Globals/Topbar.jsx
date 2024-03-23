@@ -19,7 +19,7 @@ const Topbar = ({userName, access}) => {
     }
   }, [access, userName])
  
-  console.log(access)
+
 
   return (
     <Box display="flex" justifyContent="space-between" p={2}>
