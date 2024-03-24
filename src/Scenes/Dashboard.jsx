@@ -33,9 +33,6 @@ const Dashboard = () => {
       setAllGrades(gradeCounts)
     })
 
-    
-
-
     onValue(ref(db, `Grand Attendance/${new Date().toDateString()}`),
     (snapshot) =>{
       const strandCounts = [];
@@ -63,12 +60,13 @@ const Dashboard = () => {
     })
   },[db])
 
+
   //this code is for the student table 
   useEffect(()=> {
     //this is to get all the strand muna
     const fetchLevels = () =>{
       const levels = []
-      const levelDB = ref(db, "Grade Level/");
+      const levelDB = ref(db, `Grand Attendance/${new Date().toDateString()}`);
       onValue(
         levelDB,
         (snapshot) => {
@@ -86,21 +84,18 @@ const Dashboard = () => {
 
     //this code is to get the attendance based on the taken strand
     const fetchAttendance = async () => {
-      const fetchAll = {};
+      const fetchAll = [];
 
       for (const option of optionList) {
         const attendance = ref(db, `Grand Attendance/${new Date().toDateString()}/${option.id}`);
         const snapshot = await get(attendance);
-
-        const attendanceData = [];
         snapshot.forEach((kuha) => {
-          attendanceData.push({
-            id: option.id,
+          const attendanceData = {
+            id: kuha.key,
             ...kuha.val()
-          });
+          }
+          fetchAll.push(attendanceData)
         });
-
-        fetchAll[option.id] = attendanceData;
       }
       setOneRow(fetchAll);
     };
@@ -167,6 +162,7 @@ const Dashboard = () => {
                 Number of Students Present per Strand/Track
               </Typography>
                   <PieChart
+                
                   series={[
                     {
                       data: [
@@ -224,8 +220,8 @@ const Dashboard = () => {
                   }}
                 >
                 
-                  <Box >
-                    <DataGrid columns={oneColumn} rows={oneRow[option.id] || []} />
+                  <Box key={option.id}>
+                    <DataGrid columns={oneColumn} rows={oneRow} />
                   </Box>
                 </Box>
                 ))}

@@ -30,7 +30,7 @@ const Authentication = ({setUser, setActive}) => {
       });
       toast.success("You have succesfully logged in");
       navi("/")
-      setUser(user)
+      setUser = user
       setActive("Dashboard")
       
   }

@@ -7,7 +7,7 @@ import { DataGrid, GridToolbar } from '@mui/x-data-grid'
 import { tokens } from '../theme'
 import { useTheme } from '@emotion/react'
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material'
-import { getDatabase, onValue, ref } from 'firebase/database'
+import { equalTo, getDatabase, onValue, orderByChild, query, ref } from 'firebase/database'
 
 const Recall = ({access}) => {
 
@@ -18,6 +18,40 @@ const Recall = ({access}) => {
 
     //For the datePicker
     const [chosenDate, setChosenDate] = useState('')
+
+     //for the DataGrid
+     const [allAttendance, setAllAttendance] = useState([])
+     const attendanceColumn = [
+         {field: "id_num", headerName: "ID Number", flex: 1},
+         {field: "student_name", headerName: "Student Name", flex: 1},
+         {field: "grade_level", headerName: "Grade Level", flex: 1},
+         {field: "strand", headerName: "Strand", flex: 1},
+         {field: "timeIn", headerName: "Timed In", flex: 1},
+         {field: "timeOut", headerName: "Timed Out", flex: 1},
+     ]
+
+     useEffect(() => {
+      const getChosen = () => {
+        const list = [];
+
+        const getList = ref(db, `Grand Attendance/${chosenDate}/${chosenLevel}`);
+        const filtered = query(getList, orderByChild('strand'), equalTo(chosenStrand));
+
+        onValue(filtered, (snappy) => {
+             snappy.forEach((laman) => {
+               const arrange = {
+                 id: laman.key,
+                 ...laman.val()
+               }
+               list.push(arrange)
+             })
+         
+        })
+        setAllAttendance(list)
+    }
+    getChosen();
+    })
+
 
     //for the GradeLevel
     const [chosenLevel, setChosenLevel] = useState('');
@@ -62,22 +96,13 @@ const Recall = ({access}) => {
       }
       else {
         setAllStrands(access)
+        setChosenStrand(access)
       }
-    }, [db,access])
+    }, [access,db])
     const strandChanger = (event) => {
       setChosenStrand(event.target.value)
     }
 
-    //for the DataGrid
-    const [allAttendance, setAllAttendance] = useState([])
-    const attendanceColumn = [
-        {field: "id_num", headerName: "ID Number", flex: 1},
-        {field: "student_name", headerName: "Student Name", flex: 1},
-        {field: "grade_level", headerName: "Grade Level", flex: 1},
-        {field: "strand", headerName: "Strand", flex: 1},
-        {field: "timeIn", headerName: "Timed In", flex: 1},
-        {field: "timeOut", headerName: "Timed Out", flex: 1},
-    ]
 
   return (
     <Box m="20px">
@@ -107,9 +132,11 @@ const Recall = ({access}) => {
                       <FormControl sx={{margin : '20px'}}>
                       <FormLabel>Select a Strand</FormLabel>
                       <RadioGroup value={chosenStrand} onChange={strandChanger} >
-                          {allStrands.map((item) => (
+
+                          {Object.values(allStrands).map((item) => (
                             <FormControlLabel key={item} value={item} control={<Radio/>} label={item}/>
                           ))}
+
                       </RadioGroup>
                       </FormControl>
 
