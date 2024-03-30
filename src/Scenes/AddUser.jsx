@@ -1,5 +1,5 @@
 import { Box } from '@mui/system'
-import React, { useState } from 'react'
+import React, {  useState } from 'react'
 import Header from '../Components/Header'
 import { Form, Formik } from 'formik'
 import { Button, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, TextField } from '@mui/material'
@@ -14,10 +14,12 @@ const AddUser = () => {
     const initialValues = {
         email: "",
         password: "",
-        userName: ""
+        userName: "",
+        userID: "",
     }
     const db = getDatabase();
     const auth = getAuth();
+
 
     // For radio buttons
     const [value, setValue] = useState([]);
@@ -29,7 +31,8 @@ const AddUser = () => {
     const userSchema = yup.object().shape({ 
         email: yup.string().required("This field is required"),
         password: yup.string().required("This field is required"),
-        userName: yup.string().required("This field is required")
+        userName: yup.string().required("This field is required"),
+        userID: yup.string().required("This field is required")
       })
     
 
@@ -46,10 +49,11 @@ const AddUser = () => {
             displayName: values.userName,
           }).then(() => {
           // Update additional user information in the database
-          update(ref(db, `System Users/${value}/${values.userName}`), {
+          update(ref(db, `System Users/${value}/${values.userID}`), {
             email: values.email,
             userName: values.userName,
-            accessLevel: value, 
+            accessLevel: value,
+            userID: values.userID, 
           }).then(() => {
             signInWithEmailAndPassword(auth, "admin@attendance.system", "admin123")
           }).catch((error) => {
@@ -62,8 +66,7 @@ const AddUser = () => {
           "User is now added"
         );
       } catch (error) {
-        console.error("Error signing in to system:", error);
-        toast.error("Error signing in to system. Please try again.");
+        toast.error(`Error signing in to system due to ${error}`);
       }
     };
     
@@ -133,6 +136,7 @@ const AddUser = () => {
                             sx={{ gridColumn: "span 2", marginTop:"20px" }}
                           />
                       </Box>
+              
                         {/* Radio Buttons */}
                       <Box marginTop="10px">
                         <FormControl>
@@ -142,10 +146,24 @@ const AddUser = () => {
                                 <FormControlLabel value="STEM" control={<Radio/>} label="STEM"/>
                             </RadioGroup>
                         </FormControl>
-                    </Box>
-
-                      <Box display="flex" justifyContent="center" m="20px">
-                        <Button type="submit" color="secondary" variant="contained">
+                      </Box>
+                      <Box>
+                        <TextField
+                            fullWidth
+                            variant="filled"
+                            type="text"
+                            label="Teacher Card ID"
+                            onBlur={handleBlur}
+                            onChange={handleChange}
+                            value={values.userID}
+                            name="userID"
+                            error={!!touched.userID && !!errors.userID}
+                            helperText={touched.userID && errors.userID}
+                            sx={{ gridColumn: "span 2", marginTop:"20px" }}
+                          />
+                      </Box>
+                      <Box display="flex" justifyContent="center" m="20px" sx={{display: "none"}}>
+                        <Button type="submit" color="secondary" variant="contained" >
                           Sign in
                         </Button>
                       </Box>
