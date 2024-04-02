@@ -3,15 +3,16 @@ import React, { useEffect, useRef, useState } from 'react'
 import Header from '../Components/Header'
 import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid'
 import { Form, Formik } from 'formik'
 import * as yup from 'yup'
 import { FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material'
-import { equalTo, getDatabase, onValue, orderByChild, orderByKey, query, ref, update } from 'firebase/database'
+import { equalTo, getDatabase, onValue, orderByChild, query, ref, remove, update } from 'firebase/database'
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import dayjs from 'dayjs'
 import { toast } from 'react-toastify'
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
 const AddSched = () => {
@@ -21,17 +22,12 @@ const AddSched = () => {
   const db = getDatabase();
 
   //Start of Datagrid Codes
-    //for the columns
-    const columns = [
-      {field: "subject", headerName: "Subject", flex: 1},
-      {field: "strandAssigned", headerName: "Strand", flex: 1},
-      {field: "teacherAssigned", headerName: "Teacher Assigned", flex: 1},
-      {field: "timeStart", headerName: "Period Start", flex: 1},
-      {field: "endTime", headerName: "Period End", flex: 1},
-    ]
+   
 
     //for the rows where the data is taken from Firebase
     const [schedules, setSchedule] = useState([]);
+    //for the row where the user selects
+    const [selectedSub, setSelectedSub] = useState('')
 
     //for getting the data from the database
     useEffect(() => {
@@ -52,6 +48,39 @@ const AddSched = () => {
       }
       getSubjects();
     })
+
+    //for the selection chang
+    const rowChange = (data) => {
+      setSelectedSub(data)
+    }
+
+    //for the deletion
+    const burahin = (laman) => {
+     remove(ref(db,`Subject Schedules/${laman}`)).then(() =>{
+      toast.success("Subject is deleted from the database")
+     }).catch((error) => {
+        toast.error(`An error occured due to: ${error}`)
+     })
+    }
+
+     //for the columns
+     const columns = [
+      {field: "subject", headerName: "Subject", flex: 1},
+      {field: "strandAssigned", headerName: "Strand", flex: 1},
+      {field: "teacherAssigned", headerName: "Teacher Assigned", flex: 1},
+      {field: "timeStart", headerName: "Period Start", flex: 1},
+      {field: "endTime", headerName: "Period End", flex: 1},
+      {field: "actions", type: 'actions', headerName: "Action", flex: 1, getActions: (params) => [
+        <GridActionsCellItem 
+          icon={<DeleteIcon/>}
+          label='Delete'
+          onClick={() => {
+            burahin(params.id)
+          }}
+          />
+     ]}
+    ]
+
   //End of Datagrid codes
 
 
@@ -63,7 +92,6 @@ const AddSched = () => {
     const validate = yup.object().shape({
       subject: yup.string().required("This field is required")
     })
-
 
       //for the Dropdowns
         const [strands, setStrands] = useState([])
@@ -131,7 +159,6 @@ const AddSched = () => {
 
 
   //Form Submission Code
-
   const uploadData = async (values) => {
     try{
       await update(ref(db, `Subject Schedules/${values.subject}`),
@@ -281,12 +308,17 @@ const AddSched = () => {
               columns={columns}
               rows={schedules}
               slots={{toolbar: GridToolbar}}
+              rowSelectionModel={selectedSub}
+              onRowSelectionModelChange={(value) => {
+                rowChange(value)
+              }}
               />
-          
+          </Box>
+          <Box>
+    
           </Box>
     
         </Box>
-    
     </Box>
 
    

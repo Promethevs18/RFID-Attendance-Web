@@ -38,15 +38,17 @@ const Dashboard = () => {
       const strandCounts = [];
       snapshot.forEach((elemento) => {
         elemento.forEach((element) =>{
-          const strand = element.child("strand").val();
-          if(strand){
-            if(strandCounts[strand]){
-              strandCounts[strand] += 1;
+          element.forEach((laman) => {
+            const strand = laman.child("strand").val();
+            if(strand){
+              if(strandCounts[strand]){
+                strandCounts[strand] += 1;
+              }
+              else {
+                strandCounts[strand] = 1;
+              }
             }
-            else {
-              strandCounts[strand] = 1;
-            }
-          }
+          })
       });
       });
 
@@ -90,16 +92,17 @@ const Dashboard = () => {
         const attendance = ref(db, `Grand Attendance/${new Date().toDateString()}/${option.id}`);
         const snapshot = await get(attendance);
         snapshot.forEach((kuha) => {
-          const attendanceData = {
-            id: kuha.key,
-            ...kuha.val()
-          }
-          fetchAll.push(attendanceData)
+          kuha.forEach((laman) => {
+            const attendanceData = {
+              id: laman.key,
+              ...laman.val()
+            }
+            fetchAll.push(attendanceData)
+          })
         });
       }
       setOneRow(fetchAll);
     };
-
     fetchAttendance();
     fetchLevels();
   }, [db, optionList])

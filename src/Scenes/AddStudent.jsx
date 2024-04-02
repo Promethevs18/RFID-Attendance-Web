@@ -145,7 +145,7 @@ const AddStudent = ({access}) => {
     setHideAdd(false)
 
     const takeUser = ref(database);
-    get(child(takeUser, `Grand List/${selectionModel}`))
+    get(child(takeUser, `Grand List/${newSelected}`))
     .then((snapshot) => {
         const updatedIni = {
           student_name: snapshot.val().student_name || "",
@@ -522,10 +522,11 @@ const AddStudent = ({access}) => {
             toolbar: GridToolbar,
            
           }}
+          rowSelectionModel={selectionModel}
           onRowSelectionModelChange={(newSelection) => {
             checkSelected(newSelection)
           }}
-          rowSelectionModel={selectionModel}
+          
         />
       </Box>
     </Box>

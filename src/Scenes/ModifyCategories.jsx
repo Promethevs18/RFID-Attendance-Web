@@ -238,6 +238,7 @@ const [levelOpen, setLevelOpen] = useState(false)
 
 const disagree = () => {
   setOpen(false)
+  setLevelOpen(false)
 }
 const openDialog = () => {
   setOpen(true)
