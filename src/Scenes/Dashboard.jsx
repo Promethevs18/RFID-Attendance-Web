@@ -66,28 +66,37 @@ const Dashboard = () => {
   //this code is for the student table 
   useEffect(()=> {
     //this is to get all the strand muna
-    const fetchLevels = () =>{
-      const levels = []
+    const levels = new Set();
+    const fetchLevels = () => {
       const levelDB = ref(db, `Grand Attendance/${new Date().toDateString()}`);
       onValue(
         levelDB,
         (snapshot) => {
-          snapshot.forEach((snappy) =>{
-            snappy.forEach(snappy => {
-              snappy.forEach(snappy => {
+          snapshot.forEach((snappy) => {
+            snappy.forEach((snappy) => {
+              snappy.forEach((snappy) => {
                 const snapLevel = snappy.val();
                 const takenLevel = {
                   yearLevel: snapLevel.grade_level,
                   subject: snapLevel.subject
+                };
+                const key = `${takenLevel.yearLevel}_${takenLevel.subject}`;
+                if (!levels.has(key)) { 
+                  levels.add(key);
                 }
-                levels.push(takenLevel)
-                setOptionList(levels)
-              })
-            })
-          })
+                
+              });
+            });
+          });
+          setOptionList(Array.from(levels).map(key => {
+            const [yearLevel, subject] = key.split('_');
+            return { yearLevel, subject };
+          }));
         }
-      )
-    }
+      );
+    };
+
+
 
     //this code is to get the attendance based on the taken strand
     const fetchAttendance = async () => {
@@ -111,6 +120,7 @@ const Dashboard = () => {
     fetchAttendance();
     fetchLevels();
   },[db, optionList])
+
   
   //code for the columns of one datagrid
   const oneColumn = [
@@ -195,6 +205,7 @@ const Dashboard = () => {
 
             {optionList.map((option) => (
                 <Box
+                  key={`${option.yearLevel}_${option.subject}`}
                   display="flex"
                   justifyContent="center"
                   alignContent="center"
@@ -227,7 +238,7 @@ const Dashboard = () => {
                   }}
                 >
 
-                  <DataGrid key={`${option.yearLevel}_${option.subject}`} columns={oneColumn} rows={oneRow[`${option.yearLevel}_${option.subject}`] || []} slots={{toolbar: CustomToolBar}}/>
+                  <DataGrid  key={`${option.yearLevel}_${option.subject}`}  columns={oneColumn} rows={oneRow[`${option.yearLevel}_${option.subject}`] || []} slots={{toolbar: CustomToolBar}}/>
                 </Box>
                 ))}
         </Box>

@@ -30,28 +30,6 @@ const Recall = ({access}) => {
          {field: "timeOut", headerName: "Timed Out", width: '173'},
      ]
 
-     useEffect(() => {
-      const getChosen = () => {
-        const list = [];
-
-        const getList = ref(db, `Grand Attendance/${chosenDate}/${chosenLevel}`);
-        const filtered = query(getList, orderByChild('strand'), equalTo(chosenStrand));
-
-        onValue(filtered, (snappy) => {
-             snappy.forEach((laman) => {
-               const arrange = {
-                 id: laman.key,
-                 ...laman.val()
-               }
-               list.push(arrange)
-             })
-         
-        })
-        setAllAttendance(list)
-    }
-    getChosen();
-    })
-
 
     //for the GradeLevel
     const [chosenLevel, setChosenLevel] = useState('');
@@ -102,6 +80,31 @@ const Recall = ({access}) => {
     const strandChanger = (event) => {
       setChosenStrand(event.target.value)
     }
+
+    useEffect(() => {
+      const getChosen = () => {
+        const list = [];
+        const getList = ref(db, `Grand Attendance/${chosenDate}/${chosenLevel}`);
+        onValue(getList, (snappy) => {
+          snappy.forEach((laman) => {
+            laman.forEach((value) => {
+              const arrange = {
+                id: value.key,
+                ...value.val()
+              };
+              list.push(arrange);
+            });
+          });
+          // Filter the data based on the selected strand
+          const filteredData = list.filter((attendance) => attendance.strand === chosenStrand);
+          setAllAttendance(filteredData);
+        });
+      };
+      if (chosenDate && chosenLevel && chosenStrand) {
+        getChosen();
+      }
+    }, [chosenDate, chosenLevel, chosenStrand, db]);
+    
 
 
   return (
