@@ -266,6 +266,11 @@ const AddUser = () => {
                 columns={columns}
                 rows={rows}
                 slots={{toolbar: GridToolbar}}
+                sx={{
+                  '@media print':{
+                    '.MuiDataGrid-main': { color: 'rgba(0, 0, 0, 0.87)' },
+                  },
+                }}
               />
             </Box>
        </Box>
