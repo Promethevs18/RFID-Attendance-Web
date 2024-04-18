@@ -5,7 +5,7 @@ import {get, getDatabase, onValue, ref} from "firebase/database"
 import { BarChart, PieChart, axisClasses } from '@mui/x-charts'
 import { useTheme } from '@emotion/react'
 import { tokens } from '../theme'
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarFilterButton } from '@mui/x-data-grid'
 
 const Dashboard = () => {
 
@@ -73,47 +73,52 @@ const Dashboard = () => {
         levelDB,
         (snapshot) => {
           snapshot.forEach((snappy) =>{
-            const snapLevel = snappy.key;
-            const takenLevel = {
-              id: snapLevel
-            }
-            levels.push(takenLevel)
-            setOptionList(levels)
+            snappy.forEach(snappy => {
+              snappy.forEach(snappy => {
+                const snapLevel = snappy.val();
+                const takenLevel = {
+                  yearLevel: snapLevel.grade_level,
+                  subject: snapLevel.subject
+                }
+                levels.push(takenLevel)
+                setOptionList(levels)
+              })
+            })
           })
         }
       )
     }
-    
 
     //this code is to get the attendance based on the taken strand
     const fetchAttendance = async () => {
-      const fetchAll = [];
-
+      const fetchAll = {};
+    
       for (const option of optionList) {
-        const attendance = ref(db, `Grand Attendance/${new Date().toDateString()}/${option.id}`);
+        const attendance = ref(db, `Grand Attendance/${new Date().toDateString()}/${option.yearLevel}/${option.subject}`);
         const snapshot = await get(attendance);
+        const attendanceList = [];
         snapshot.forEach((kuha) => {
-          kuha.forEach((laman) => {
-            const attendanceData = {
-              id: laman.key,
-              ...laman.val()
-            }
-            fetchAll.push(attendanceData)
-          })
+          const attendanceData = {
+            id: kuha.key,
+            ...kuha.val()
+          };
+          attendanceList.push(attendanceData);
         });
+        fetchAll[`${option.yearLevel}_${option.subject}`] = attendanceList;
       }
       setOneRow(fetchAll);
     };
     fetchAttendance();
     fetchLevels();
-  }, [db, optionList])
-
+  },[db, optionList])
   
   //code for the columns of one datagrid
   const oneColumn = [
     { field: "id_num", headerName: "Student ID", flex: 1 },
     { field: "student_name", headerName: "Student Name", flex: 1},
     { field: "strand", headerName: "Strand", flex: 1},
+    { field: "subject", headerName: "Subject", flex: 1},
+    { field: "grade_level", headerName: "Grade Level", flex: 1},
     { field: "timeIn", headerName: "Time In", flex: 1},
     { field: "timeOut", headerName: "Time Out", flex: 1},
   ]
@@ -134,7 +139,7 @@ const Dashboard = () => {
     },
   };
 
-  
+
   // UI part
   return (
     <Box m="20px">
@@ -183,20 +188,18 @@ const Dashboard = () => {
          </Box>
          )}
        </Box>
-       <Box marginTop="20px"  
+       <Box m='20px'
             display="grid"
             gridTemplateColumns="repeat(2, 1fr)" 
-            gap="20px"
             justifyContent="space-between">
 
             {optionList.map((option) => (
                 <Box
-                  key={option.id} 
-                  marginTop="20px"
                   display="flex"
                   justifyContent="center"
                   alignContent="center"
                   height="68vh"
+                  width='95%'
                   sx={{
                     "& .MuiDataGrid-root": {
                       border: "none",
@@ -223,15 +226,22 @@ const Dashboard = () => {
                     }
                   }}
                 >
-                
-                  <Box key={option.id}>
-                    <DataGrid columns={oneColumn} rows={oneRow} />
-                  </Box>
+
+                  <DataGrid key={`${option.yearLevel}_${option.subject}`} columns={oneColumn} rows={oneRow[`${option.yearLevel}_${option.subject}`] || []} slots={{toolbar: CustomToolBar}}/>
                 </Box>
                 ))}
         </Box>
     </Box>
   )
 }
+function CustomToolBar () {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton/>
+      <GridToolbarFilterButton/>
+      <GridToolbarDensitySelector/>
+    </GridToolbarContainer>
+  )
+ }
 
 export default Dashboard

@@ -2,7 +2,7 @@ import React from 'react'
 import Header from '../Components/Header'
 import { Box } from '@mui/material'
 import { DataGrid, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid'
-import { equalTo, getDatabase, onValue, orderByChild, orderByKey, query, ref, update } from 'firebase/database'
+import { equalTo, getDatabase, onValue, orderByChild, query, ref, update } from 'firebase/database'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { toast } from 'react-toastify'
@@ -93,29 +93,26 @@ const StudentLister = ({access}) => {
         const presentArray = []
         const filter = ref(database, `Grand Attendance/${new Date().toDateString()}`);
 
-        studentList.forEach(snap => {
+        studentList.forEach((snap) => {
           let bilang = 0;
 
           onValue(filter, snapshot => {
-            snapshot.forEach(laman => {
-              laman.forEach(value => {
-                value.forEach(val => {
+            snapshot.forEach((laman) => {
+              laman.forEach((value) => {
+                value.forEach((val) => {
                   if(val.child('student_name').val() === snap.student_name){
                       bilang++
                   }
-                  else{
-                    bilang = 0;
-                  }
-                  const nakuha ={
-                    name: snap.student_name,
-                    count: bilang
-                  }
-                  presentArray.push(nakuha)
                 })
               })
             }) 
+            const nakuha ={
+              name: snap.student_name,
+              count: bilang
+            }
+            presentArray.push(nakuha)
+            setPresent(presentArray)
           })
-          setPresent(presentArray)
         })
   
         fetchCurrentAttendance();
