@@ -13,6 +13,7 @@ user_credentials.json
 /build
 
 # misc
+.env0
 .DS_Store
 .env.local
 .env.development.local

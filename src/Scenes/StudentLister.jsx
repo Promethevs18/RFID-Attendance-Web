@@ -1,8 +1,8 @@
 import React from 'react'
 import Header from '../Components/Header'
 import { Box } from '@mui/material'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
-import { equalTo, getDatabase, onValue, orderByChild, query, ref, update } from 'firebase/database'
+import { DataGrid, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid'
+import { equalTo, getDatabase, onValue, orderByChild, orderByKey, query, ref, update } from 'firebase/database'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { toast } from 'react-toastify'
@@ -17,6 +17,7 @@ const StudentLister = ({access}) => {
     let matches = []
     let notMatch = []
     const database = getDatabase();
+    const [presentCount, setPresent] = useState([])
 
     useEffect(() => {
         const fetchGrandList = () => {
@@ -88,11 +89,40 @@ const StudentLister = ({access}) => {
 
           })
         }
-      
+
+        const presentArray = []
+        const filter = ref(database, `Grand Attendance/${new Date().toDateString()}`);
+
+        studentList.forEach(snap => {
+          let bilang = 0;
+
+          onValue(filter, snapshot => {
+            snapshot.forEach(laman => {
+              laman.forEach(value => {
+                value.forEach(val => {
+                  if(val.child('student_name').val() === snap.student_name){
+                      bilang++
+                  }
+                  else{
+                    bilang = 0;
+                  }
+                  const nakuha ={
+                    name: snap.student_name,
+                    count: bilang
+                  }
+                  presentArray.push(nakuha)
+                })
+              })
+            }) 
+          })
+          setPresent(presentArray)
+        })
+  
         fetchCurrentAttendance();
         fetchGrandList();
         callForAdmission();
-      },);
+
+      });
 
     const columns = [
         {
@@ -107,9 +137,18 @@ const StudentLister = ({access}) => {
         { field: "caretaker_name", headerName: "Caretaker's Name", flex: 1 },
         { field: "caretaker_num", headerName: "Caretaker's Phone", flex: 1 },
         { field: "admission", headerName: "Current Admission Status", flex: 1,},
+        { field: 'value', headerName: 'Attended Subjects', flex: 1}
+    
       ];
 
+      const newColumns = columns.map(column => {
+        if (column.field === 'value') {
+          return { ...column, valueGetter: params => presentCount.find(item => item.name === params.row.student_name)?.count };
+        }
+        return column;
+      });
     
+
   return (
     <Box m="20px">
         <Header 
@@ -151,7 +190,14 @@ const StudentLister = ({access}) => {
               }}
         >
 
-        <DataGrid rows={studentList} columns={columns}  slots={{ toolbar: GridToolbar }} getCellClassName={(params) => {
+        <DataGrid   
+          sx={{
+                '@media print':{
+                  '.MuiDataGrid-main': { 
+                    color: 'rgba(0, 0, 0, 0.87)',
+                  }
+                },
+              }} rows={studentList} columns={newColumns}  slots={{ toolbar: CustomToolBar }} getCellClassName={(params) => {
           if(params.field === 'admission' || params.field === null ) {
             return params.value === "Absent" ? 'Absent' : (params.value === "Present" ? "Present" : '')       
           }
@@ -159,6 +205,29 @@ const StudentLister = ({access}) => {
        </Box>
     </Box>
   )
+  
 }
+
+function CustomToolBar () {
+  return (
+    <GridToolbarContainer>
+      <GridToolbarColumnsButton/>
+      <GridToolbarFilterButton/>
+      <GridToolbarDensitySelector/>
+      
+      <GridToolbarExport
+        csvOptions={{
+          disableToolbarButton: true,
+        }}
+        printOptions={{
+         fileName:"Hello",
+         allColumns: false,
+         hideToolbar: true
+        }}
+      />
+    </GridToolbarContainer>
+  )
+ }
+ 
 
 export default StudentLister

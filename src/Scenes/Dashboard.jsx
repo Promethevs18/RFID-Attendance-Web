@@ -83,6 +83,7 @@ const Dashboard = () => {
         }
       )
     }
+    
 
     //this code is to get the attendance based on the taken strand
     const fetchAttendance = async () => {

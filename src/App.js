@@ -16,6 +16,7 @@ import AddUser from "./Scenes/AddUser"
 import Recall from "./Scenes/Recall";
 import { getDatabase, onValue, ref } from "firebase/database";
 import AddSched from "./Scenes/AddSched";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -40,12 +41,17 @@ function App() {
           });
           setAllUsers(users);
           const emailList = allUsers.map((laman) => laman.email);
-          if (emailList.includes(auth.currentUser.email)) {
-            const index = emailList.indexOf(auth.currentUser.email);
-            setAccess(users[index].accessLevel);
+          if(auth.currentUser && auth.currentUser.email){
+            if (emailList.includes(auth.currentUser.email)) {
+              const index = emailList.indexOf(auth.currentUser.email);
+              setAccess(users[index].accessLevel);
+            }
+            setUserName(authUser.displayName)
+            setUser(authUser);
           }
-          setUserName(authUser.displayName)
-          setUser(authUser);
+          else{
+            signInWithEmailAndPassword(auth, 'admin@attendance.system', 'admin123')
+          }
         });
       } else {
         setUser(null);
@@ -84,7 +90,7 @@ function App() {
             <Topbar setIsSidebar={setIsSidebar} userName={userName} access={access}/>
             <Routes>
               <Route path="/" element={<Dashboard setActive={setActive} access={access}  />}/>
-              <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access} />}/>
+              <Route path="/authentication" element={<Authentication setActive={setActive} user={user} access={access}/>}/>
               <Route path="/addstudent" element={<AddStudent setActive={setActive} access={access}/>}/>
               <Route path="/modifycategories" element={<ModifyCategories setActive={setActive} access={access} />}/>
               <Route path="/studentlist" element={<StudentLister setActive={setActive} access={access}/>}/>

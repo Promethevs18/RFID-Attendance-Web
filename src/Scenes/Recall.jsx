@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Header from '../Components/Header'
 import {  DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { DataGrid, GridToolbar } from '@mui/x-data-grid'
+import { DataGrid, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid'
 import { tokens } from '../theme'
 import { useTheme } from '@emotion/react'
 import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material'
@@ -22,12 +22,12 @@ const Recall = ({access}) => {
      //for the DataGrid
      const [allAttendance, setAllAttendance] = useState([])
      const attendanceColumn = [
-         {field: "id_num", headerName: "ID Number", flex: 1},
-         {field: "student_name", headerName: "Student Name", flex: 1},
-         {field: "grade_level", headerName: "Grade Level", flex: 1},
-         {field: "strand", headerName: "Strand", flex: 1},
-         {field: "timeIn", headerName: "Timed In", flex: 1},
-         {field: "timeOut", headerName: "Timed Out", flex: 1},
+         {field: "id_num", headerName: "ID Number",width: '173'},
+         {field: "student_name", headerName: "Student Name", width: '173'},
+         {field: "grade_level", headerName: "Grade Level", width: '173'},
+         {field: "strand", headerName: "Strand", width: '173'},
+         {field: "timeIn", headerName: "Timed In", width: '173'},
+         {field: "timeOut", headerName: "Timed Out", width: '173'},
      ]
 
      useEffect(() => {
@@ -105,7 +105,7 @@ const Recall = ({access}) => {
 
 
   return (
-    <Box m="20px">
+    <Box m="20px" justifyContent='center'>
         <Header title="ATTENDANCE RECALL" subtitle="This section allows you to recall the attendance for a specific date. Just select the date on the picker, and you're done"/>
         <Box m="10px">
             <Box display="flex" justifyContent="center" m="10px">
@@ -146,8 +146,9 @@ const Recall = ({access}) => {
             <Box 
             display="flex"
             height="65vh"
-            justifyContent="center"
+            justifyContent='center'
             sx={{
+
               "& .MuiDataGrid-root": {
                 border: "none",
               },
@@ -176,13 +177,40 @@ const Recall = ({access}) => {
             <DataGrid
               columns={attendanceColumn}
               rows={allAttendance}
-              slots={{toolbar: GridToolbar}}
+              slots={{toolbar: CustomToolBar }}
+              sx={{
+                '@media print':{
+                  '.MuiDataGrid-main': { color: 'rgba(0, 0, 0, 0.87)' },
+                },
+              }}
               />
           
             </Box>
         </Box>
     </Box>
   )
+}
+ //Functions for the toolbar
+function CustomToolBar () {
+ return (
+   <GridToolbarContainer>
+     <GridToolbarColumnsButton/>
+     <GridToolbarFilterButton/>
+     <GridToolbarDensitySelector/>
+     
+     <GridToolbarExport
+       csvOptions={{
+         disableToolbarButton: true,
+       }}
+       printOptions={{
+        fileName:"Hello",
+        allColumns: false,
+        // fields: ["id_num"],
+        hideToolbar: true
+       }}
+     />
+   </GridToolbarContainer>
+ )
 }
 
 export default Recall
