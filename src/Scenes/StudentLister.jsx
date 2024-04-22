@@ -28,13 +28,15 @@ const StudentLister = ({access}) => {
             filtered,
             (snapshot) => {
                 const patientData = snapshot.val();
-                Object.keys(patientData).forEach((key) => {
-                  const patient = {
-                    id: key,
-                    ...patientData[key],
-                  };
-                  patients.push(patient);
-              });
+                if(patientData && patientData !== null){
+                  Object.keys(patientData).forEach((key) => {
+                    const patient = {
+                      id: key,
+                      ...patientData[key],
+                    };
+                    patients.push(patient);
+                });
+                }
     
               setStudentList([...patients]); // Create a new array with the updated data
             },
@@ -52,7 +54,9 @@ const StudentLister = ({access}) => {
             (snapshot) => {
                 (snapshot).forEach((snappy) => {
                   (snappy).forEach((laman) => {
-                    currentAttendance.push(laman.key)
+                   laman.forEach(snap =>{
+                    currentAttendance.push(snap.key)
+                   })
                   })
                 })
             }
@@ -64,12 +68,14 @@ const StudentLister = ({access}) => {
           let listahan = studentList.map(laman => laman.id)
 
           listahan.forEach(content => {
+            console.log(attendanceList)
             if(attendanceList.includes(content)){
               matches.push(content);
             }
             else{
               notMatch.push(content)
             }
+            console.log(matches)
             studentList.forEach(objects => {
               if (matches.includes(objects.id)) {
                   matches.forEach(element => {
@@ -120,6 +126,8 @@ const StudentLister = ({access}) => {
         callForAdmission();
 
       });
+
+
 
     const columns = [
         {
