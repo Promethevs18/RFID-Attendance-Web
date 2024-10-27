@@ -1,219 +1,158 @@
-import { Box } from '@mui/system'
-import React, { useEffect, useState } from 'react'
-import Header from '../Components/Header'
-import {  DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { DataGrid, GridToolbarColumnsButton, GridToolbarContainer, GridToolbarDensitySelector, GridToolbarExport, GridToolbarFilterButton } from '@mui/x-data-grid'
-import { tokens } from '../theme'
-import { useTheme } from '@emotion/react'
-import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material'
-import { equalTo, getDatabase, onValue, orderByChild, query, ref } from 'firebase/database'
+import React, { useEffect, useState, useCallback } from 'react';
+import { Box } from '@mui/system';
+import { useTheme } from '@emotion/react';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DataGrid, GridToolbarContainer, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarDensitySelector, GridToolbarExport } from '@mui/x-data-grid';
+import { tokens } from '../theme';
+import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@mui/material';
+import { getDatabase, onValue, ref } from 'firebase/database';
+import Header from '../Components/Header';
 
-const Recall = ({access}) => {
+const Recall = ({ access }) => {
+    const colors = tokens(useTheme().palette.mode);
+    const db = getDatabase();
 
-    //for the colors
-    const colors = tokens(useTheme().palette.mode) 
-    //for the database reference
-    const db = getDatabase(); 
-
-    //For the datePicker
-    const [chosenDate, setChosenDate] = useState('')
-
-     //for the DataGrid
-     const [allAttendance, setAllAttendance] = useState([])
-     const attendanceColumn = [
-         {field: "id_num", headerName: "ID Number",width: '173'},
-         {field: "student_name", headerName: "Student Name", width: '173'},
-         {field: "grade_level", headerName: "Grade Level", width: '173'},
-         {field: "strand", headerName: "Strand", width: '173'},
-         {field: "timeIn", headerName: "Timed In", width: '173'},
-         {field: "timeOut", headerName: "Timed Out", width: '173'},
-     ]
-
-
-    //for the GradeLevel
+    const [chosenDate, setChosenDate] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [chosenLevel, setChosenLevel] = useState('');
-    const [allLevels, setAllLevels] = useState([]);
-    useEffect(() => {
-      const takenLevels = [];
-      const getLevels = () => {
-        const getter = ref(db, "Grade Level");
-        onValue(getter, (snapshot) => {
-          snapshot.forEach((laman) =>{
-            const filter = {
-              id: laman.key
-            }
-            takenLevels.push(filter)
-          })
-        })
-        setAllLevels(takenLevels)
-      }
-      getLevels();
-     
-    }, [db])
-    const handlerChange = (event) => {
-       setChosenLevel(event.target.value)
-    }
-
-    //for the Strands
     const [chosenStrand, setChosenStrand] = useState('');
+    const [allAttendance, setAllAttendance] = useState([]);
+    const [allLevels, setAllLevels] = useState([]);
     const [allStrands, setAllStrands] = useState([]);
-    useEffect(() => {
-      const getStrands = []
-      if(access === 'Administrator'){
-        const getNow = () => {
-            const getter = ref(db, "Strand");
-            onValue(getter, (snappy) => {
-              snappy.forEach((laman) => {
-                getStrands.push(laman.key)
-              })
-            })
-        }
-        setAllStrands(getStrands)
-        getNow();
-      }
-      else {
-        setAllStrands(access)
-        setChosenStrand(access)
-      }
-    }, [access,db])
-    const strandChanger = (event) => {
-      setChosenStrand(event.target.value)
-    }
 
+    const attendanceColumn = [
+        { field: "id_num", headerName: "ID Number", width: 173 },
+        { field: "student_name", headerName: "Student Name", width: 173 },
+        { field: "grade_level", headerName: "Grade Level", width: 173 },
+        { field: "strand", headerName: "Strand", width: 173 },
+        { field: "timeIn", headerName: "Timed In", width: 173 },
+        { field: "timeOut", headerName: "Timed Out", width: 173 },
+    ];
+
+    // Fetch Grade Levels
     useEffect(() => {
-      const getChosen = () => {
-        const list = [];
-        const getList = ref(db, `Grand Attendance/${chosenDate}/${chosenLevel}`);
-        onValue(getList, (snappy) => {
-          snappy.forEach((laman) => {
-            laman.forEach((value) => {
-              const arrange = {
-                id: value.key,
-                ...value.val()
-              };
-              list.push(arrange);
-            });
-          });
-          // Filter the data based on the selected strand
-          const filteredData = list.filter((attendance) => attendance.strand === chosenStrand);
-          setAllAttendance(filteredData);
+        const getLevels = ref(db, "Grade Level");
+        onValue(getLevels, (snapshot) => {
+            const levels = [];
+            snapshot.forEach((child) => levels.push({ id: child.key }));
+            setAllLevels(levels);
         });
-      };
-      if (chosenDate && chosenLevel && chosenStrand) {
-        getChosen();
-      }
-    }, [chosenDate, chosenLevel, chosenStrand, db]);
-    
+    }, [db]);
 
+    // Fetch Strands
+    useEffect(() => {
+        if (access === 'Administrator') {
+            const getStrands = ref(db, "Strand");
+            onValue(getStrands, (snapshot) => {
+                const strands = [];
+                snapshot.forEach((child) => strands.push(child.key));
+                setAllStrands(strands);
+            });
+        } else {
+            setAllStrands([access]);
+            setChosenStrand(access);
+        }
+    }, [access, db]);
 
-  return (
-    <Box m="20px" justifyContent='center'>
-        <Header title="ATTENDANCE RECALL" subtitle="This section allows you to recall the attendance for a specific date. Just select the date on the picker, and you're done"/>
-        <Box m="10px">
-            <Box display="flex" justifyContent="center" m="10px">
+    // Fetch Attendance based on Date and Range
+    const fetchAttendanceData = useCallback(() => {
+        const list = [];
+        const start = new Date(startDate || chosenDate);
+        const end = endDate ? new Date(endDate) : start;
+        const formatDate = (date) => date.toDateString();
+
+        const addDateAttendance = (date) => {
+            const path = `Grand Attendance/${formatDate(date)}/${chosenLevel}`;
+            const dateRef = ref(db, path);
+
+            onValue(dateRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    snapshot.forEach((subjectSnapshot) => {
+                        subjectSnapshot.forEach((data) => {
+                            const attendance = { id: data.key, ...data.val() };
+                            list.push(attendance);
+                        });
+                    });
+                    setAllAttendance(list.filter((item) => item.strand === chosenStrand));
+                }
+            });
+        };
+
+        for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+            addDateAttendance(new Date(d));
+        }
+    }, [chosenDate, startDate, endDate, chosenLevel, chosenStrand, db]);
+
+    useEffect(() => {
+        if (chosenLevel && chosenStrand && (chosenDate || (startDate && endDate))) {
+            fetchAttendanceData();
+        }
+    }, [fetchAttendanceData, chosenLevel, chosenStrand, chosenDate, startDate, endDate]);
+
+    return (
+        <Box m="20px" justifyContent='center'>
+            <Header title="ATTENDANCE RECALL" subtitle="This section allows you to recall attendance for a specific date or date range." />
+            <Box m="10px" display="grid" justifyContent="center" textAlign="center">
+                <p>Choose a single date or a date range</p>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                        label='Choose a date'
-                        value={chosenDate}
-                        onChange={(date) => setChosenDate(new Date(date).toDateString())}
-                        />
+                    <DatePicker label='Date' value={chosenDate} onChange={(date) => setChosenDate(new Date(date).toDateString())} />
                 </LocalizationProvider>
-            </Box>
-
-                <Box display="flex" justifyContent="center" m="10px">
-                    <FormControl sx={{margin : '20px'}}>
-                      <FormLabel>Select a Grade Level</FormLabel>
-                      <RadioGroup value={chosenLevel} onChange={handlerChange} >
-                          {allLevels.map((item) => (
-                            <FormControlLabel key={item.id} value={item.id} control={<Radio/>} label={item.id}/>
-                          ))}
-                      </RadioGroup>
+                <Box display="flex" justifyContent="center" mt="20px">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker label='Start Date' value={startDate} onChange={(date) => setStartDate(new Date(date).toDateString())} />
+                        <DatePicker label='End Date' value={endDate} onChange={(date) => setEndDate(new Date(date).toDateString())} />
+                    </LocalizationProvider>
+                </Box>
+                <Box display="flex" justifyContent="center" mt="20px">
+                    <FormControl>
+                        <FormLabel>Grade Level</FormLabel>
+                        <RadioGroup value={chosenLevel} onChange={(e) => setChosenLevel(e.target.value)}>
+                            {allLevels.map((item) => (
+                                <FormControlLabel key={item.id} value={item.id} control={<Radio />} label={item.id} />
+                            ))}
+                        </RadioGroup>
                     </FormControl>
-
                     {access === 'Administrator' && (
-                      <FormControl sx={{margin : '20px'}}>
-                      <FormLabel>Select a Strand</FormLabel>
-                      <RadioGroup value={chosenStrand} onChange={strandChanger} >
-
-                          {Object.values(allStrands).map((item) => (
-                            <FormControlLabel key={item} value={item} control={<Radio/>} label={item}/>
-                          ))}
-
-                      </RadioGroup>
-                      </FormControl>
-
+                        <FormControl>
+                            <FormLabel>Strand</FormLabel>
+                            <RadioGroup value={chosenStrand} onChange={(e) => setChosenStrand(e.target.value)}>
+                                {allStrands.map((strand) => (
+                                    <FormControlLabel key={strand} value={strand} control={<Radio />} label={strand} />
+                                ))}
+                            </RadioGroup>
+                        </FormControl>
                     )}
                 </Box>
-
-            <Box 
-            display="flex"
-            height="65vh"
-            justifyContent='center'
-            sx={{
-
-              "& .MuiDataGrid-root": {
-                border: "none",
-              },
-              "& .MuiDataGrid-cell": {
-                borderBottom: "none",
-              },
-              "& .name-column--cell": {
-                color: colors.white[200],
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: colors.maroon[700],
-                borderBottom: "none",
-              },
-              "& .MuiDataGrid-virtualScroller": {
-                backgroundColor: colors.yellow[700],
-              },
-              "& .MuiDataGrid-footerContainer": {
-                borderTop: "none",
-                backgroundColor: colors.maroon[600],
-              },
-              "& .MuiButtonBase-root":{
-                color: colors.white[200]
-              }
-            }}
-            >
-            <DataGrid
-              columns={attendanceColumn}
-              rows={allAttendance}
-              slots={{toolbar: CustomToolBar }}
-              sx={{
-                '@media print':{
-                  '.MuiDataGrid-main': { color: 'rgba(0, 0, 0, 0.87)' },
-                },
-              }}
-              />
-          
+            </Box>
+            <Box height="65vh" display="flex" justifyContent='center' mt="20px">
+                <DataGrid
+                    columns={attendanceColumn}
+                    rows={allAttendance}
+                    slots={{ toolbar: CustomToolBar }}
+                    sx={{
+                        "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.maroon[700] },
+                        "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.yellow[700] },
+                        "& .MuiDataGrid-footerContainer": { backgroundColor: colors.maroon[600] },
+                        "& .MuiButtonBase-root": { color: colors.white[200] }
+                    }}
+                />
             </Box>
         </Box>
-    </Box>
-  )
-}
- //Functions for the toolbar
-function CustomToolBar () {
- return (
-   <GridToolbarContainer>
-     <GridToolbarColumnsButton/>
-     <GridToolbarFilterButton/>
-     <GridToolbarDensitySelector/>
-     
-     <GridToolbarExport
-       csvOptions={{
-         disableToolbarButton: true,
-       }}
-       printOptions={{
-        fileName:"Hello",
-        allColumns: false,
-        // fields: ["id_num"],
-        hideToolbar: true
-       }}
-     />
-   </GridToolbarContainer>
- )
+    );
+};
+
+// Custom Toolbar for DataGrid
+function CustomToolBar() {
+    return (
+        <GridToolbarContainer>
+            <GridToolbarColumnsButton />
+            <GridToolbarFilterButton />
+            <GridToolbarDensitySelector />
+            <GridToolbarExport />
+        </GridToolbarContainer>
+    );
 }
 
-export default Recall
+export default Recall;

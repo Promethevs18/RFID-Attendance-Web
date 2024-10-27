@@ -20,6 +20,7 @@ import {
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { useTheme } from "@emotion/react";
 import { tokens } from "../theme";
+import * as XLSX from 'xlsx'
 
 
 const AddStudent = ({access}) => {
@@ -299,6 +300,78 @@ const AddStudent = ({access}) => {
   }
 
 
+  //EXCEL IMPORT
+   // Function to handle file selection
+   const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    handleFileUpload(file)
+  };
+
+  // Function to handle file upload
+  const handleFileUpload = async (file) => {
+    if (file) {
+      const reader = new FileReader();
+      
+      reader.readAsBinaryString(file);
+      
+      reader.onload = async (e) => {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        jsonData.shift();
+        
+        const updates = {}; // Prepare an object to batch updates
+  
+        jsonData.forEach((row) => {
+          if (row[0] && row[1] && row[3] && row[4]) { // Ensure required fields are present
+            const studentData = {
+              id_num: row[0],
+              student_name: row[1],
+              admission: row[2] || 'Absent', // Provide a default value if missing
+              grade_level: row[3],
+              strand: row[4],
+              address: row[5] || '',
+              caretaker_name: row[6] || '',
+              caretaker_num: row[7] || '',
+              subject: row[8] || '',
+              status: row[9] || 'enrolled'
+            };
+  
+            // Prepare updates in a batch format
+            updates[`Grade Level/${studentData.grade_level}/${studentData.id_num}`] = studentData;
+            updates[`Strand/${studentData.strand}/${studentData.id_num}`] = studentData;
+            updates[`Grand List/${studentData.id_num}`] = studentData;
+          }
+        });
+  
+        // Perform the batch update to Firebase
+        try {
+          await update(ref_database(database), updates);
+          toast.success("Excel data uploaded successfully!");
+        } catch (error) {
+          console.error("Error updating Firebase: ", error);
+          toast.error("Error uploading data to Firebase");
+        }
+      };
+      
+      reader.onerror = (error) => {
+        console.error("Error reading Excel file: ", error);
+        toast.error("Error reading Excel file");
+      };
+    }
+  };
+  
+
+  const handleButtonClick = () => {
+    document.getElementById('fileInput').click()
+  }
+  
+
+
   //UI part
   return (
     <Box m="20px">
@@ -457,7 +530,7 @@ const AddStudent = ({access}) => {
                   color="secondary" 
                   sx={{m:"20px"}}
                   onClick={() => addStudent(values)}
-                  >Add Now Information</Button>   
+                  >Add New Information</Button>   
                   )}
          
                 {showButton && (
@@ -476,6 +549,18 @@ const AddStudent = ({access}) => {
                   onClick={() => removeData(values)}
                   >Delete Information</Button>   
                 )}
+                <Box>
+                <input 
+                  type="file" 
+                  accept=".xlsx, .xls" 
+                  onChange={handleFileChange}
+                  hidden 
+                  id="fileInput" 
+                />
+                <Button variant="contained" color="primary" onClick={handleButtonClick}>
+                  Upload Excel to Firebase
+                </Button>
+              </Box>
               </Box>
             </Form>
           )}
