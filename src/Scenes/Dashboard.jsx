@@ -160,7 +160,7 @@ const Dashboard = () => {
             {allGrades.length > 0 && (
                 <BarChart
                   dataset={allGrades}
-                  xAxis={[{ scaleType: 'band', dataKey: 'id',  label: "Grade Level"}]}
+                  xAxis={[{ scaleType: 'band', dataKey: 'id',  label: "Grade Level", }]}
                   series={[{ dataKey: 'value', label: 'Registered Students',  }]}
                   {...chartSetting}
                 />

@@ -1,6 +1,5 @@
 {
   "hosting": {
-    "site": "protoperp-attendance-monitor",  
     "public": "build",
     "ignore": [
       "firebase.json",

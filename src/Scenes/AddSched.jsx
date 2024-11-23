@@ -1,333 +1,252 @@
-import { Box } from '@mui/system'
-import React, { useEffect, useRef, useState } from 'react'
-import Header from '../Components/Header'
-import { useTheme } from '@emotion/react'
-import { tokens } from '../theme'
-import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid'
-import { Form, Formik } from 'formik'
-import * as yup from 'yup'
-import { FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material'
-import { equalTo, getDatabase, onValue, orderByChild, query, ref, remove, update } from 'firebase/database'
-import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers'
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import dayjs from 'dayjs'
-import { toast } from 'react-toastify'
+import { Box } from '@mui/system';
+import React, { useEffect, useRef, useState } from 'react';
+import Header from '../Components/Header';
+import { useTheme } from '@emotion/react';
+import { tokens } from '../theme';
+import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
+import { Form, Formik } from 'formik';
+import * as yup from 'yup';
+import { FormControl, InputLabel, Select, MenuItem, TextField, Button } from '@mui/material';
+import { equalTo, getDatabase, onValue, orderByChild, query, ref, remove, update } from 'firebase/database';
+import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-
 const AddSched = () => {
-
-  const theme = useTheme()
-  const colors = tokens(theme.palette.mode)
+  const theme = useTheme();
+  const colors = tokens(theme.palette.mode);
   const db = getDatabase();
 
-  //Start of Datagrid Codes
-   
+  // State variables
+  const [schedules, setSchedules] = useState([]);
+  const [selectedSub, setSelectedSub] = useState('');
+  const [strands, setStrands] = useState([]);
+  const [selectedStrand, setSelectedStrand] = useState('');
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeacher, setSelectedTeacher] = useState('');
+  const [startOras, setStartOras] = useState(dayjs(new Date()));
+  const [endOras, setEndOras] = useState(dayjs(new Date()));
 
-    //for the rows where the data is taken from Firebase
-    const [schedules, setSchedule] = useState([]);
-    //for the row where the user selects
-    const [selectedSub, setSelectedSub] = useState('')
+  // Fetch schedules
+  useEffect(() => {
+    const subRef = ref(db, 'Subject Schedules/');
+    const unsubscribe = onValue(subRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const subjects = Object.keys(snapshot.val()).map((key) => ({
+          id: key,
+          ...snapshot.val()[key],
+        }));
+        setSchedules(subjects);
+      } else {
+        setSchedules([]);
+      }
+    });
+    return () => unsubscribe(); // Cleanup listener
+  }, [db]);
 
-    //for getting the data from the database
-    useEffect(() => {
-      const getSubjects = () => {
-        const subjects = []
-        const subRef = ref(db, "Subject Schedules/");
-        onValue(subRef, (snapshot) => {
-          const subData = snapshot.val();
-            Object.keys(subData).forEach((laman) => {
-              const subs = {
-                id: laman,
-                ...subData[laman]
-              }
-              subjects.push(subs)
-            });
+  // Fetch strands and teachers based on selected strand
+  useEffect(() => {
+    const strandsRef = ref(db, 'System Users/');
+    const unsubscribeStrands = onValue(strandsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const strandsArray = [];
+        snapshot.forEach((snap) => {
+          if(snap.key !== 'Administrator'){
+            strandsArray.push({ id: snap.key });
+          }
         });
-        setSchedule([...subjects])
+        setStrands(strandsArray);
       }
-      getSubjects();
-    })
+    });
 
-    //for the selection chang
-    const rowChange = (data) => {
-      setSelectedSub(data)
-    }
-
-    //for the deletion
-    const burahin = (laman) => {
-     remove(ref(db,`Subject Schedules/${laman}`)).then(() =>{
-      toast.success("Subject is deleted from the database")
-     }).catch((error) => {
-        toast.error(`An error occured due to: ${error}`)
-     })
-    }
-
-     //for the columns
-     const columns = [
-      {field: "subject", headerName: "Subject", flex: 1},
-      {field: "strandAssigned", headerName: "Strand", flex: 1},
-      {field: "teacherAssigned", headerName: "Teacher Assigned", flex: 1},
-      {field: "timeStart", headerName: "Period Start", flex: 1},
-      {field: "endTime", headerName: "Period End", flex: 1},
-      {field: "actions", type: 'actions', headerName: "Action", flex: 1, getActions: (params) => [
-        <GridActionsCellItem 
-          icon={<DeleteIcon/>}
-          label='Delete'
-          onClick={() => {
-            burahin(params.id)
-          }}
-          />
-     ]}
-    ]
-
-  //End of Datagrid codes
-
-
-//Start of Form codes
-    const formikRef = useRef(null)
-    const initialValues = {
-      subject: ""
-    }
-    const validate = yup.object().shape({
-      subject: yup.string().required("This field is required")
-    })
-
-      //for the Dropdowns
-        const [strands, setStrands] = useState([])
-        const [selectedStrand, setSelStrand] = useState("");
-        const [teachers, setTeachers] = useState([])
-        const [selectedTeacher, setSelectedTeacher] = useState("")
-
-        //getting the strands from the database
-        useEffect(() => {
-          const strandsArray = []
-          const getStrands = () => {
-            const dataNode = ref(db, "Strand/");
-            onValue(dataNode, (snapshot) => {
-              snapshot.forEach((snappy) => {
-                const getLevel = {
-                  id: snappy.key
-                }
-                strandsArray.push(getLevel)
-                setStrands(strandsArray)
-              })
-            })
-          }
-          getStrands();
-          
-          if(selectedStrand !== ""){
-            getTeacher(selectedStrand)
-          }
-        }, [db, selectedStrand])
-
-        //getting the teacher's name from the database 
-        const getTeacher = (pinili) => { 
-            const list = [];
-
-            const getData = ref(db, `System Users/${pinili}`);
-            const filtered = query(getData, orderByChild("accessLevel"), equalTo(pinili));
-            onValue(
-              filtered,
-              (snapshot) => {
-                 snapshot.forEach((value) => {
-                    const nakuha = value.val();
-                    list.push(nakuha.userName)
-                 })
-              }
-            )
-            setTeachers([ ...list]);
-        }
-
-        //change handler for the strand drop down
-          const strandChange = (change) => {
-             setSelStrand(change.target.value)
-        
-          }
-
-          //change handler for the teacher drop down
-          const teacherChange = (bago) => {
-           setSelectedTeacher(bago.target.value)
-         
-          }
-        
-      //For the time picker
-      const [startOras, setStartOras] = useState(dayjs(new Date()))
-      const [endOras, setEndOras] = useState(dayjs(new Date()))
-
-  //End of Form Codes
-
-
-  //Form Submission Code
-  const uploadData = async (values) => {
-    try{
-      await update(ref(db, `Subject Schedules/${values.subject}`),
-      {
-        ...values,
-        timeStart: startOras,
-        endTime: endOras,
-        strandAssigned: selectedStrand,
-        teacherAssigned: selectedTeacher
-
-      }
+    if (selectedStrand) {
+      const teachersRef = query(
+        ref(db, `System Users/${selectedStrand}`),
+        orderByChild('accessLevel'),
+        equalTo(selectedStrand)
       );
-      toast.success("Data uploaded successfully")
-    }
-    catch (error){
-      toast.error(`Error occured due to ${error}`)
-    }
-  }
+      const unsubscribeTeachers = onValue(teachersRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const teacherList = [];
+          snapshot.forEach((snap) => {
+            teacherList.push(snap.val().userName);
+          });
+          setTeachers(teacherList);
+        } else {
+          setTeachers([]);
+        }
+      });
 
+      return () => unsubscribeTeachers(); // Cleanup teacher listener
+    }
+
+    return () => unsubscribeStrands(); // Cleanup strand listener
+  }, [db, selectedStrand]);
+
+  // Handle row selection
+  const rowChange = (data) => {
+    setSelectedSub(data);
+  };
+
+  // Handle delete
+  const deleteSchedule = (id) => {
+    remove(ref(db, `Subject Schedules/${id}`))
+      .then(() => toast.success('Subject deleted successfully'))
+      .catch((error) => toast.error(`Error: ${error.message}`));
+  };
+
+  // Form submission
+  const uploadData = async (values) => {
+    if (!selectedStrand || !selectedTeacher) {
+      toast.error('Please select both a strand and a teacher.');
+      return;
+    }
+
+    try {
+      await update(ref(db, `Subject Schedules/${values.subject}`), {
+        ...values,
+        timeStart: startOras.format('HH:mm'),
+        endTime: endOras.format('HH:mm'),
+        strandAssigned: selectedStrand,
+        teacherAssigned: selectedTeacher,
+      });
+      toast.success('Data uploaded successfully');
+    } catch (error) {
+      toast.error(`Error: ${error.message}`);
+    }
+  };
+
+  const columns = [
+    { field: 'subject', headerName: 'Subject', flex: 1 },
+    { field: 'strandAssigned', headerName: 'Strand', flex: 1 },
+    { field: 'teacherAssigned', headerName: 'Teacher Assigned', flex: 1 },
+    { field: 'timeStart', headerName: 'Period Start', flex: 1 },
+    { field: 'endTime', headerName: 'Period End', flex: 1 },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Action',
+      flex: 1,
+      getActions: (params) => [
+        <GridActionsCellItem
+          icon={<DeleteIcon />}
+          label="Delete"
+          onClick={() => deleteSchedule(params.id)}
+        />,
+      ],
+    },
+  ];
 
   return (
     <Box m="20px">
-        <Header title="Class Schedule Manifesto" subtitle="This is the area where the administrator can edit the content of the class schedule"/>
+      <Header
+        title="Class Schedule Manifesto"
+        subtitle="This is the area where the administrator can edit the content of the class schedule"
+      />
+      <Box m="20px" display="flex" justifyContent="space-around">
+        {/* Form Section */}
+        <Formik
+          initialValues={{ subject: '' }}
+          validationSchema={yup.object().shape({
+            subject: yup.string().required('This field is required'),
+          })}
+          onSubmit={uploadData}
+        >
+          {({ values, errors, touched, handleBlur, handleChange }) => (
+            <Form>
+              <Box display="flex" justifyContent="center">
+                <TextField
+                  variant="filled"
+                  fullWidth
+                  value={values.subject}
+                  type="text"
+                  label="Subject"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  name="subject"
+                  error={!!touched.subject && !!errors.subject}
+                  helperText={touched.subject && errors.subject}
+                />
+                <FormControl sx={{ width: '300px', marginLeft: '20px' }}>
+                  <InputLabel id="levelLabel">Select a Strand/Track</InputLabel>
+                  <Select
+                    labelId="levelLabel"
+                    value={selectedStrand}
+                    onChange={(e) => setSelectedStrand(e.target.value)}
+                  >
+                    {strands.map((strand) => (
+                      <MenuItem key={strand.id} value={strand.id}>
+                        {strand.id}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box display="flex" justifyContent="center" marginTop="20px">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <TimePicker
+                    label="Choose Start Time"
+                    value={startOras}
+                    onChange={(newValue) => setStartOras(newValue || dayjs())}
+                    sx={{ marginRight: '20px' }}
+                  />
+                  <TimePicker
+                    label="Choose End Time"
+                    value={endOras}
+                    onChange={(newValue) => setEndOras(newValue || dayjs())}
+                  />
+                </LocalizationProvider>
+              </Box>
+              <Box display="flex" justifyContent="center" marginTop="20px">
+                <FormControl sx={{ width: '300px', marginLeft: '20px' }}>
+                  <InputLabel id="teacherLabel">Select a Teacher To Assign</InputLabel>
+                  <Select
+                    labelId="teacherLabel"
+                    value={selectedTeacher}
+                    onChange={(e) => setSelectedTeacher(e.target.value)}
+                  >
+                    {teachers.map((teacher, index) => (
+                      <MenuItem key={index} value={teacher}>
+                        {teacher}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+              <Box display="flex" justifyContent="center" marginTop="20px">
+                <Button variant="contained" type="submit">
+                  Upload
+                </Button>
+              </Box>
+            </Form>
+          )}
+        </Formik>
 
-        <Box m='20px' display='flex' justifyContent='space-around'>
-          
-          <Box display='flex' justifyContent='space-between'>
-            <Formik
-              innerRef={formikRef}
-              initialValues={initialValues}
-              validationSchema={validate}
-              onSubmit={uploadData}
-              >
-                {({values, errors, touched, handleBlur, handleChange}) => (
-                  <Form>
-                      {/* For the First Line of UI */}
-                      <Box justifyContent='center' display='flex' >
-                        <TextField
-                          variant='filled'
-                          fullWidth
-                          value = {values.subject}
-                          type = 'text'
-                          label = 'Subject'
-                          onChange = {handleChange}
-                          onBlur = {handleBlur}
-                          name = 'subject'
-                          error = {!!touched.subject && !! errors.subject}
-                          helperText = {touched.subject && errors.subject}
-                        />
-
-                        <FormControl sx={{width: "300px", marginLeft: "20px", marginRight: '20px'}}>
-                          <InputLabel id = 'levelLabel'>Select a Strand/Track</InputLabel>
-                            <Select
-                              labelId='levelLabel'
-                              label='Select a Strand/Track'
-                              onChange={strandChange}
-                              value={selectedStrand}
-                            > 
-                              {strands.map((laman) => (
-                                <MenuItem key={laman.id} value={laman.id}>
-                                  {laman.id}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                        </FormControl>
-                      </Box>
-
-                      <Box justifyContent='space-evenly' display='flex' marginTop='20px'>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-
-                          <TimePicker 
-                          label='Choose a time' 
-                          value={startOras} 
-                          onChange={(newValue) => setStartOras(newValue.format('hh:mm'))}
-                          sx={{marginRight: "20px"}}/>
-
-                          <TimePicker 
-                          label='Choose a time' 
-                          value={endOras} 
-                          onChange={(newValue) => setEndOras(newValue.format('hh:mm'))}
-                          sx={{marginRight: "20px"}}/>
-
-                        </LocalizationProvider>
-                      </Box>
-                      
-                      <Box display="flex" justifyContent="center" m="20px">
-                      <FormControl sx={{width: "300px", marginLeft: "20px", marginRight: '20px'}}>
-                          <InputLabel id = 'teacherLabel'>Select a Teacher To Assign</InputLabel>
-                            <Select
-                              labelId='teacherLabel'
-                              label='Select a Teacher To Assign'
-                              onChange={teacherChange}
-                              value={selectedTeacher}
-                            > 
-                              {teachers.map((value, index) => (
-                                <MenuItem key={index} value={value}>
-                                  {value}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                        </FormControl>
-                      </Box>
-
-                      <Box display="flex" justifyContent="center">
-                        <Button variant='contained' onClick={() => uploadData(values)}>
-                          Upload
-                        </Button>
-                      </Box>
-                      
-                </Form>
-                )}
-            </Formik>
-
-          </Box>
-
-          <Box 
-            display="flex"
-            height="65vh"
-            width="68%"
-            sx={{
-              "& .MuiDataGrid-root": {
-                border: "none",
-              },
-              "& .MuiDataGrid-cell": {
-                borderBottom: "none",
-              },
-              "& .name-column--cell": {
-                color: colors.white[200],
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: colors.maroon[700],
-                borderBottom: "none",
-              },
-              "& .MuiDataGrid-virtualScroller": {
-                backgroundColor: colors.yellow[700],
-              },
-              "& .MuiDataGrid-footerContainer": {
-                borderTop: "none",
-                backgroundColor: colors.maroon[600],
-              },
-              "& .MuiButtonBase-root":{
-                color: colors.white[200]
-              }
-            }}
-            >
-            <DataGrid
-              columns={columns}
-              rows={schedules}
-              slots={{toolbar: GridToolbar}}
-              rowSelectionModel={selectedSub}
-              onRowSelectionModelChange={(value) => {
-                rowChange(value)
-              }}
-              sx={{
-                '@media print':{
-                  '.MuiDataGrid-main': { color: 'rgba(0, 0, 0, 0.87)' },
-                },
-              }}
-              />
-          </Box>
-          <Box>
-    
-          </Box>
-    
+        {/* DataGrid Section */}
+        <Box
+          height="65vh"
+          width="68%"
+          sx={{
+            '& .MuiDataGrid-root': { border: 'none' },
+            '& .MuiDataGrid-columnHeaders': { backgroundColor: colors.maroon[700] },
+            '& .MuiDataGrid-footerContainer': { backgroundColor: colors.maroon[600] },
+          }}
+        >
+          <DataGrid
+            rows={schedules}
+            columns={columns}
+            pageSize={5}
+            checkboxSelection
+            onRowSelectionModelChange={(value) => rowChange(value)}
+            sx={{ '@media print': { '.MuiDataGrid-main': { color: 'black' } } }}
+            components={{ Toolbar: GridToolbar }}
+          />
         </Box>
+      </Box>
     </Box>
+  );
+};
 
-   
-  )
-}
-
-export default AddSched
+export default AddSched;
